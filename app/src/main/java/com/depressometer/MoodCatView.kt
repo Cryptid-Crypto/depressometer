@@ -6,6 +6,8 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.graphics.RectF
 import android.util.AttributeSet
@@ -44,9 +46,13 @@ class MoodCatView @JvmOverloads constructor(
     private val srcRect = Rect()
     private val dstRect = RectF()
 
+    private val washPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP)
+        alpha = 92
+    }
+
     private var score = 50f
-    private var skinFur: Int? = null
-    private var skinAccent: Int? = null
+    private var skinTint: Int? = null
     private var art: Bitmap? = null
 
     fun setScore(score: Float) {
@@ -54,10 +60,9 @@ class MoodCatView @JvmOverloads constructor(
         invalidate()
     }
 
-    /** Override fur colours (shop skin). Pass nulls for the mood-derived default. */
-    fun setSkin(fur: Int?, accent: Int?) {
-        skinFur = fur
-        skinAccent = accent
+    /** Colour wash for a shop skin, applied over the character art. Null = none. */
+    fun setSkinTint(color: Int?) {
+        skinTint = color
         invalidate()
     }
 
@@ -72,7 +77,6 @@ class MoodCatView @JvmOverloads constructor(
         val w = width.toFloat()
         val h = height.toFloat()
         val moodColor = GradientScaleView.colorForScore(score)
-        val ring = skinAccent ?: moodColor
         val bmp = art
 
         if (bmp != null) {
@@ -83,18 +87,25 @@ class MoodCatView @JvmOverloads constructor(
             clipPath.addCircle(cx, cy, r, Path.Direction.CW)
             canvas.save()
             canvas.clipPath(clipPath)
+            val layer = canvas.saveLayer(cx - r, cy - r, cx + r, cy + r, null)
             srcRect.set(0, 0, bmp.width, bmp.height)
             dstRect.set(cx - r, cy - r, cx + r, cy + r)
             canvas.drawBitmap(bmp, srcRect, dstRect, bitmapPaint)
+            val tint = skinTint
+            if (tint != null) {
+                washPaint.color = tint
+                canvas.drawRect(dstRect, washPaint)
+            }
+            canvas.restoreToCount(layer)
             canvas.restore()
-            ringPaint.color = ring
+            ringPaint.color = moodColor
             canvas.drawCircle(cx, cy, r, ringPaint)
             return
         }
 
         // ---- vector fallback ----
-        val fur = skinFur ?: blend(moodColor, Color.WHITE, 0.35f)
-        val dark = skinAccent ?: blend(moodColor, Color.BLACK, 0.30f)
+        val fur = blend(moodColor, Color.WHITE, 0.35f)
+        val dark = blend(moodColor, Color.BLACK, 0.30f)
         headPaint.color = fur
         earPaint.color = fur
         strokePaint.color = dark

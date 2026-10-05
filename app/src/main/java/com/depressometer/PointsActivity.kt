@@ -129,12 +129,12 @@ class PointsActivity : AppCompatActivity() {
             setPadding(dp(12), dp(12), dp(12), dp(12))
         }
 
-        // Optional live preview for cat skins
-        if (item.type == ItemType.CAT_SKIN) {
-            val preview = MoodCatView(this).apply {
+        // Artwork preview for cat skins
+        if (item.imageRes != 0) {
+            val preview = android.widget.ImageView(this).apply {
                 layoutParams = LinearLayout.LayoutParams(dp(52), dp(52))
-                setScore(20f) // happy face for the preview
-                setSkin(item.fur, item.accent)
+                setImageResource(item.imageRes)
+                scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
             }
             row.addView(preview)
         }

@@ -7,9 +7,13 @@ data class ShopItem(
     val type: ItemType,
     val nameRes: Int,
     val cost: Int,
-    val fur: Int? = null,      // CAT_SKIN: fur colour (null = mood-derived)
-    val accent: Int? = null,   // CAT_SKIN: inner-ear / nose tint
+    val imageRes: Int = 0,     // artwork used in the shop / as the mascot skin
+    val tint: Int? = null,     // colour wash applied over the mascot art (null = none)
     val badgeRes: Int? = null  // BADGE: title string
+    // NFT-ready: when items are tokenised, add e.g.
+    //   val nftContract: String? = null,
+    //   val nftTokenId: Long? = null
+    // and gate ownership on the wallet instead of PointsStore.owns().
 )
 
 /** Static catalog of cosmetic items purchasable with points. */
@@ -24,18 +28,21 @@ object Shop {
     const val BADGE_MASTER = "badge_master"
 
     val items: List<ShopItem> = listOf(
-        ShopItem(SKIN_CLASSIC, ItemType.CAT_SKIN, R.string.item_skin_classic, 0),
+        ShopItem(
+            SKIN_CLASSIC, ItemType.CAT_SKIN, R.string.item_skin_classic, 0,
+            imageRes = R.drawable.skin_classic
+        ),
         ShopItem(
             SKIN_NEON, ItemType.CAT_SKIN, R.string.item_skin_neon, 80,
-            fur = 0xFF00E5FF.toInt(), accent = 0xFFFF2BD6.toInt()
+            imageRes = R.drawable.skin_neon, tint = 0xFF00E5FF.toInt()
         ),
         ShopItem(
             SKIN_GOLD, ItemType.CAT_SKIN, R.string.item_skin_gold, 150,
-            fur = 0xFFFFC107.toInt(), accent = 0xFFB8860B.toInt()
+            imageRes = R.drawable.skin_gold, tint = 0xFFFFC107.toInt()
         ),
         ShopItem(
             SKIN_MIDNIGHT, ItemType.CAT_SKIN, R.string.item_skin_midnight, 100,
-            fur = 0xFF5C6BC0.toInt(), accent = 0xFF283593.toInt()
+            imageRes = R.drawable.skin_midnight, tint = 0xFF3F51B5.toInt()
         ),
         ShopItem(BADGE_EXPLORER, ItemType.BADGE, R.string.item_badge_explorer, 60,
             badgeRes = R.string.badge_explorer),

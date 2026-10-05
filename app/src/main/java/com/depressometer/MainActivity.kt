@@ -426,10 +426,7 @@ class MainActivity : AppCompatActivity() {
         val color = GradientScaleView.colorForScore(score)
         scoreText.setTextColor(color)
         scale.setScore(score, animate)
-        moodCat.setSkin(
-            (Shop.byId(pointsStore.equippedSkin()) ?: Shop.defaultSkin()).fur,
-            (Shop.byId(pointsStore.equippedSkin()) ?: Shop.defaultSkin()).accent
-        )
+        moodCat.setSkinTint((Shop.byId(pointsStore.equippedSkin()) ?: Shop.defaultSkin()).tint)
         catArt.getOrNull(affinityIndex(score))?.let { moodCat.setArt(it) }
         overlay.setAccentColor(color)
     }
@@ -561,7 +558,7 @@ class MainActivity : AppCompatActivity() {
     /** Apply the equipped shop skin + badge. */
     private fun applyCosmetics() {
         val skin = Shop.byId(pointsStore.equippedSkin()) ?: Shop.defaultSkin()
-        moodCat.setSkin(skin.fur, skin.accent)
+        moodCat.setSkinTint(skin.tint)
         val badge = Shop.byId(pointsStore.equippedBadge())
         badgeText.text = badge?.badgeRes?.let { getString(it) } ?: ""
     }
