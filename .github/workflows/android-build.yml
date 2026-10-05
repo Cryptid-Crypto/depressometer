@@ -34,12 +34,32 @@ jobs:
       - name: Configure SDK path
         run: echo "sdk.dir=${ANDROID_SDK_ROOT}" > local.properties
 
+      - name: Decode release keystore
+        run: echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+
       - name: Build debug APK
         run: gradle assembleDebug --no-daemon --stacktrace
 
-      - name: Upload APK artifact
+      - name: Build signed release APK
+        run: gradle assembleRelease --no-daemon --stacktrace
+        env:
+          KEYSTORE_PATH: ${{ runner.temp }}/release.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: depressometer-debug-apk
           path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      - name: Upload release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: depressometer-release-apk
+          path: app/build/outputs/apk/release/*.apk
           if-no-files-found: error
