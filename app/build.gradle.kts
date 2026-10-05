@@ -65,6 +65,10 @@ dependencies {
     // AdMob (rewarded ads for the points shop)
     implementation("com.google.android.gms:play-services-ads:23.6.0")
 
+    // CameraX returns ListenableFuture; the Guava stub can vanish from the
+    // compile classpath once AdMob is added, so pin the real Guava explicitly.
+    implementation("com.google.guava:guava:32.1.3-android")
+
     // CameraX
     implementation("androidx.camera:camera-core:1.3.4")
     implementation("androidx.camera:camera-camera2:1.3.4")
