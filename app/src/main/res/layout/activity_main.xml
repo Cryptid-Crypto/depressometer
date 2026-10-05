@@ -5,25 +5,106 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/black"
     tools:context=".MainActivity">
 
-    <!-- Camera preview -->
+    <!-- Camera preview (full screen) -->
     <androidx.camera.view.PreviewView
         android:id="@+id/preview"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/score_panel"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Score overlay panel -->
+    <!-- Dimmed overlay + face oval + scanning animation -->
+    <com.depressometer.FaceOverlayView
+        android:id="@+id/overlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Top bar -->
     <LinearLayout
-        android:id="@+id/score_panel"
+        android:id="@+id/top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="#80000000"
+        android:paddingStart="16dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Depressometer"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/btn_switch"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="0dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:text="Scan others"
+            android:textColor="#FFDD00"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/btn_history"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="0dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:text="History"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <!-- Hint under top bar -->
+    <TextView
+        android:id="@+id/hint_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Center your face in the oval"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:background="#66000000"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        app:layout_constraintTop_toBottomOf="@id/top_bar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Bottom panel: score + progress + suggestions + scan button -->
+    <LinearLayout
+        android:id="@+id/bottom_panel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="#AA000000"
+        android:background="#B3000000"
         android:padding="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -32,39 +113,66 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Depressometer Score:"
+            android:text="Depressometer Score"
             android:textColor="#FFFFFF"
-            android:textSize="20sp"
-            android:textStyle="bold"/>
+            android:textSize="14sp"
+            android:gravity="center" />
 
         <TextView
             android:id="@+id/score_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="--.--"
+            android:text="--"
             android:textColor="#FFDD00"
-            android:textSize="48sp"
-            android:textStyle="bold"/>
+            android:textSize="56sp"
+            android:textStyle="bold"
+            android:gravity="center" />
 
         <TextView
             android:id="@+id/level_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="---"
+            android:minHeight="24dp"
+            android:text="Tap Start scan to begin"
             android:textColor="#FFFFFF"
-            android:textSize="18sp"/>
+            android:textSize="18sp"
+            android:gravity="center" />
 
-        <!-- Disclaimer -->
+        <ProgressBar
+            android:id="@+id/scan_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:layout_marginTop="10dp"
+            android:max="100"
+            android:progress="0"
+            android:visibility="invisible" />
+
         <TextView
-            android:id="@+id/disclaimer_text"
+            android:id="@+id/action_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:textColor="#CCCCCC"
-            android:textSize="12sp"
-            android:autoLink="web"/>
+            android:text="What can help"
+            android:textColor="#FFDD00"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/suggestions_box"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btn_scan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Start scan"
+            android:textSize="16sp" />
 
     </LinearLayout>
 
