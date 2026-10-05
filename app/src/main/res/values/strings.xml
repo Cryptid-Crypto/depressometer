@@ -1,3 +1,109 @@
 <resources>
     <string name="app_name">Depressometer</string>
+
+    <!-- Top bar -->
+    <string name="history_title">Scan history</string>
+    <string name="info_title">About &amp; privacy</string>
+    <string name="btn_history">History</string>
+    <string name="btn_info">Info</string>
+    <string name="btn_scan_others">Scan others</string>
+    <string name="btn_scan_self">Scan self</string>
+    <string name="btn_remind_on">Reminders on</string>
+    <string name="btn_remind_off">Remind me</string>
+
+    <!-- Hints / coaching -->
+    <string name="hint_front">Center your face in the oval</string>
+    <string name="hint_back">Point the back camera at the person and hold still</string>
+    <string name="coach_closer">Move a little closer</string>
+    <string name="coach_back">Move back a little</string>
+    <string name="coach_center">Center your face in the oval</string>
+    <string name="coach_good">Good — hold still</string>
+    <string name="scan_complete">Scan complete ✓</string>
+    <string name="no_face">No face detected — try again</string>
+
+    <!-- Score panel -->
+    <string name="score_caption">Depressometer Score</string>
+    <string name="score_placeholder">--</string>
+    <string name="tap_to_begin">Tap Start scan to begin</string>
+    <string name="level_live">(live) %1$s</string>
+    <string name="baseline_vs">vs your baseline %1$s</string>
+    <string name="baseline_none">Baseline forms after a few scans</string>
+    <string name="score_info">Score blends facial cues from depression research — smile (AU12/AU6), eye openness (EAR) and head movement (FacePsy 2024; Girard &amp; Cohn 2009). For fun; not a diagnosis.</string>
+
+    <!-- Buttons -->
+    <string name="btn_start_scan">Start scan</string>
+    <string name="btn_scanning">Scanning…</string>
+    <string name="btn_scan_again">Scan again</string>
+    <string name="btn_share">Share result</string>
+    <string name="btn_clear">Clear</string>
+    <string name="what_can_help">What can help</string>
+
+    <!-- Levels -->
+    <string name="level_cheerful">CHEERFUL</string>
+    <string name="level_happy">HAPPY</string>
+    <string name="level_neutral">NEUTRAL</string>
+    <string name="level_blue">BLUE</string>
+    <string name="level_high">DEPRESS-O-METER HIGH</string>
+
+    <!-- History -->
+    <string name="empty_history">No scans yet.\nGo back and run your first scan!</string>
+    <string name="streak_label">Current streak</string>
+    <string name="streak_days">%1$d day(s)</string>
+    <string name="trend_label">Mood over time</string>
+    <string name="camera_front">Front camera</string>
+    <string name="camera_back">Back camera</string>
+
+    <!-- Notifications -->
+    <string name="notif_channel_name">Daily check-in</string>
+    <string name="notif_channel_desc">A gentle daily reminder to scan your mood</string>
+    <string name="notif_title">Time for your daily check-in 🐱</string>
+    <string name="notif_body">Open Depressometer and scan your mood.</string>
+    <string name="reminder_on_toast">Daily reminder set for ~8pm</string>
+    <string name="reminder_off_toast">Daily reminder turned off</string>
+    <string name="notif_permission_needed">Notifications permission is needed for reminders</string>
+
+    <!-- Share -->
+    <string name="share_chooser">Share your Depressometer result</string>
+    <string name="share_caption">My Depressometer result</string>
+    <string name="share_footer">Depressometer — a playful mood scanner. Not a medical device.</string>
+
+    <!-- Info screen -->
+    <string name="info_body">Depressometer is a playful, camera-based mood scanner. It is NOT a medical device and does not diagnose, treat, or measure depression.\n\nThe score blends facial cues that appear in depression research: smile intensity (action units AU12/AU6), eye openness (an Eye-Aspect-Ratio style alertness cue), head movement (a psychomotor-retardation proxy) and facial expressivity. Sources: Girard &amp; Cohn (ACII 2009); Jones et al. (2018); FacePsy (2024).\n\n⚠️ \"Smiling depression\" is real, so a smile never dictates the score on its own.\n\nPRIVACY: All face processing happens on-device using Google ML Kit. Camera frames are analysed in memory and discarded immediately — no images are stored, uploaded, or shared. Only the numeric score and its level are saved, in a private local file on your phone.\n\nIf you are struggling, please talk to someone you trust or a qualified professional.</string>
+
+    <!-- Affirmations (5 bands, low score -> high score) -->
+    <string-array name="affirmations">
+        <item>You\'re glowing today — that good energy is yours to keep. 🌟</item>
+        <item>Your face is carrying real warmth right now. Nice. ✨</item>
+        <item>Steady and balanced — a solid place to be. 🌤️</item>
+        <item>A softer day, and that\'s okay. You\'re doing better than you feel. 💙</item>
+        <item>Hard moments never tell the whole story. You matter, and this passes. 💙</item>
+    </string-array>
+
+    <string-array name="tips_cheerful">
+        <item>Keep doing what you\'re doing — it\'s working.</item>
+        <item>Bank this win: note one thing that made today good.</item>
+        <item>Share the energy — tell someone you appreciate them.</item>
+    </string-array>
+    <string-array name="tips_happy">
+        <item>A short walk or stretch keeps the good mood rolling.</item>
+        <item>Hydrate — low energy often just means low water.</item>
+        <item>Message a friend; connection lifts mood fast.</item>
+    </string-array>
+    <string-array name="tips_neutral">
+        <item>Step outside for 10 minutes of daylight.</item>
+        <item>Try 5 slow breaths: in 4s, hold 4s, out 4s.</item>
+        <item>Put on one song you love and actually listen to it.</item>
+        <item>Drink a glass of water and roll your shoulders.</item>
+    </string-array>
+    <string-array name="tips_blue">
+        <item>Reach out to one person today — a call or a text.</item>
+        <item>Move your body for 15 minutes (walk, dance, anything).</item>
+        <item>Cut back on doomscrolling for the next hour.</item>
+        <item>Get some sunlight and eat a proper meal.</item>
+    </string-array>
+    <string-array name="tips_high">
+        <item>Talk to someone you trust today — you don\'t have to carry it alone.</item>
+        <item>One small step: water, an open window, a step outside.</item>
+        <item>If this feeling lingers, a real check-in with a professional can help.</item>
+    </string-array>
 </resources>

@@ -11,8 +11,20 @@ android {
         applicationId = "com.depressometer"
         minSdk = 21
         targetSdk = 34
-        versionCode = 3
-        versionName = "1.2.0"
+        versionCode = 4
+        versionName = "1.3.0"
+    }
+
+    signingConfigs {
+        create("release") {
+            val path = System.getenv("KEYSTORE_PATH")
+            if (path != null && file(path).exists()) {
+                storeFile = file(path)
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
@@ -22,6 +34,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            val path = System.getenv("KEYSTORE_PATH")
+            if (path != null && file(path).exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
         debug {
             isDebuggable = true
@@ -44,6 +60,7 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     // CameraX
     implementation("androidx.camera:camera-core:1.3.4")

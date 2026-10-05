@@ -16,10 +16,18 @@ class HistoryActivity : AppCompatActivity() {
 
         val list = findViewById<RecyclerView>(R.id.history_list)
         val empty = findViewById<TextView>(R.id.empty_text)
+        val chart = findViewById<TrendChartView>(R.id.trend_chart)
+        val streakValue = findViewById<TextView>(R.id.streak_value)
         val store = HistoryStore(this)
 
         val records = store.all().sortedByDescending { it.timestamp }
         list.layoutManager = LinearLayoutManager(this)
+
+        streakValue.text = getString(R.string.streak_days, store.streakDays())
+
+        // Chart wants oldest -> newest.
+        val chrono = records.sortedBy { it.timestamp }.map { it.score }
+        chart.setScores(chrono.takeLast(30))
 
         if (records.isEmpty()) {
             empty.visibility = View.VISIBLE

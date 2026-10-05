@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Typeface
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -16,6 +17,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.PopupMenu
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
@@ -42,13 +44,17 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var previewView: PreviewView
     private lateinit var overlay: FaceOverlayView
+    private lateinit var moodCat: MoodCatView
     private lateinit var scale: GradientScaleView
     private lateinit var scoreText: TextView
     private lateinit var levelText: TextView
     private lateinit var hintText: TextView
+    private lateinit var baselineText: TextView
     private lateinit var progressBar: ProgressBar
     private lateinit var scanButton: Button
+    private lateinit var shareButton: Button
     private lateinit var switchButton: Button
+    private lateinit var menuButton: Button
     private lateinit var actionTitle: TextView
     private lateinit var suggestionsBox: LinearLayout
 
@@ -61,7 +67,13 @@ class MainActivity : AppCompatActivity() {
     private var scanEndAt = 0L
     private val frameFeatures = mutableListOf<ScoreModel.FrameFeatures>()
 
+    // Last locked result (for sharing)
+    private var lastScore = 50f
+    private var lastLevel = ""
+    private var lastAffirmation = ""
+
     private val handler = Handler(Looper.getMainLooper())
+    private val appPrefs by lazy { getSharedPreferences("depressometer_store", MODE_PRIVATE) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,13 +81,17 @@ class MainActivity : AppCompatActivity() {
 
         previewView = findViewById(R.id.preview)
         overlay = findViewById(R.id.overlay)
+        moodCat = findViewById(R.id.mood_cat)
         scale = findViewById(R.id.mood_scale)
         scoreText = findViewById(R.id.score_text)
         levelText = findViewById(R.id.level_text)
         hintText = findViewById(R.id.hint_text)
+        baselineText = findViewById(R.id.baseline_text)
         progressBar = findViewById(R.id.scan_progress)
         scanButton = findViewById(R.id.btn_scan)
+        shareButton = findViewById(R.id.btn_share)
         switchButton = findViewById(R.id.btn_switch)
+        menuButton = findViewById(R.id.btn_menu)
         actionTitle = findViewById(R.id.action_title)
         suggestionsBox = findViewById(R.id.suggestions_box)
 
@@ -91,13 +107,14 @@ class MainActivity : AppCompatActivity() {
 
         scanButton.setOnClickListener { startScan() }
         switchButton.setOnClickListener { switchCamera() }
-        findViewById<Button>(R.id.btn_history).setOnClickListener {
-            startActivity(Intent(this, HistoryActivity::class.java))
-        }
+        menuButton.setOnClickListener { showMenu() }
+        shareButton.setOnClickListener { shareResult() }
 
         updateSwitchLabel()
         updateHint()
-        scale.setScore(50f, animate = false) // neutral resting marker
+        scale.setScore(50f, animate = false)
+        moodCat.setScore(50f)
+        updateBaselineLabel(null)
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
             == PackageManager.PERMISSION_GRANTED
@@ -106,6 +123,56 @@ class MainActivity : AppCompatActivity() {
         } else {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), REQ_CAMERA)
         }
+    }
+
+    // ---------------------------------------------------------------- menu
+
+    private fun showMenu() {
+        val popup = PopupMenu(this, menuButton)
+        popup.menu.add(0, MENU_HISTORY, 0, getString(R.string.btn_history))
+        popup.menu.add(0, MENU_INFO, 1, getString(R.string.btn_info))
+        popup.menu.add(
+            0, MENU_REMIND, 2,
+            if (remindersEnabled()) getString(R.string.btn_remind_on)
+            else getString(R.string.btn_remind_off)
+        )
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                MENU_HISTORY -> { startActivity(Intent(this, HistoryActivity::class.java)); true }
+                MENU_INFO -> { startActivity(Intent(this, InfoActivity::class.java)); true }
+                MENU_REMIND -> { toggleReminder(); true }
+                else -> false
+            }
+        }
+        popup.show()
+    }
+
+    private fun remindersEnabled() = appPrefs.getBoolean("reminder_enabled", false)
+
+    private fun setRemindersEnabled(enabled: Boolean) =
+        appPrefs.edit().putBoolean("reminder_enabled", enabled).apply()
+
+    private fun toggleReminder() {
+        if (remindersEnabled()) {
+            ReminderScheduler.cancel(this)
+            setRemindersEnabled(false)
+            Toast.makeText(this, getString(R.string.reminder_off_toast), Toast.LENGTH_SHORT).show()
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQ_NOTIF
+            )
+        } else {
+            enableReminder()
+        }
+    }
+
+    private fun enableReminder() {
+        ReminderScheduler.schedule(this)
+        setRemindersEnabled(true)
+        Toast.makeText(this, getString(R.string.reminder_on_toast), Toast.LENGTH_SHORT).show()
     }
 
     // ---------------------------------------------------------------- camera
@@ -156,13 +223,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateSwitchLabel() {
-        switchButton.text = if (lensFacing == CameraSelector.LENS_FACING_FRONT)
-            "Scan others" else "Scan self"
+        switchButton.setText(
+            if (lensFacing == CameraSelector.LENS_FACING_FRONT) R.string.btn_scan_others
+            else R.string.btn_scan_self
+        )
     }
 
     private fun updateHint() {
-        hintText.text = if (lensFacing == CameraSelector.LENS_FACING_FRONT)
-            "Center your face in the oval" else "Point the back camera at the person and hold still"
+        hintText.setText(
+            if (lensFacing == CameraSelector.LENS_FACING_FRONT) R.string.hint_front
+            else R.string.hint_back
+        )
     }
 
     // ---------------------------------------------------------------- scan
@@ -177,11 +248,12 @@ class MainActivity : AppCompatActivity() {
         progressBar.visibility = View.VISIBLE
         progressBar.progress = 0
         scanButton.isEnabled = false
-        scanButton.text = "Scanning…"
+        scanButton.setText(R.string.btn_scanning)
+        shareButton.visibility = View.GONE
         actionTitle.visibility = View.GONE
         suggestionsBox.visibility = View.GONE
-        scoreText.text = "--"
-        levelText.text = "Hold still…"
+        scoreText.text = getString(R.string.score_placeholder)
+        levelText.setText(R.string.btn_scanning)
         scale.reset()
 
         scanEndAt = System.currentTimeMillis() + SCAN_DURATION_MS
@@ -203,12 +275,12 @@ class MainActivity : AppCompatActivity() {
         overlay.stopScan()
         progressBar.visibility = View.INVISIBLE
         scanButton.isEnabled = true
-        scanButton.text = "Scan again"
+        scanButton.setText(R.string.btn_scan_again)
 
         if (frameFeatures.isEmpty()) {
             resultLocked = false
-            scoreText.text = "--"
-            levelText.text = "No face detected — try again"
+            scoreText.text = getString(R.string.score_placeholder)
+            levelText.setText(R.string.no_face)
             scale.reset()
             return
         }
@@ -216,16 +288,26 @@ class MainActivity : AppCompatActivity() {
         val finalScore = ScoreModel.score(frameFeatures)
         resultLocked = true
 
-        val level = ScoreModel.levelFor(finalScore)
+        // Personal baseline: capture the previous reference, then fold in the new score.
+        val prevBaseline = historyStore.baseline()
+        val delta = if (prevBaseline != null) finalScore - prevBaseline else null
+        historyStore.updateBaseline(finalScore)
+
+        val level = levelString(finalScore)
+        lastScore = finalScore
+        lastLevel = level
         scoreText.text = String.format(Locale.US, "%.1f", finalScore)
         levelText.text = level
         applyScoreVisuals(finalScore, animate = true)
-        hintText.text = "Scan complete ✓"
+        updateBaselineLabel(delta)
+        hintText.setText(R.string.scan_complete)
 
         val cameraName = if (lensFacing == CameraSelector.LENS_FACING_BACK) "Back" else "Front"
         historyStore.add(ScanRecord(System.currentTimeMillis(), finalScore, level, cameraName))
 
         showResult(finalScore)
+
+        shareButton.visibility = View.VISIBLE
     }
 
     private fun resetResult() {
@@ -235,14 +317,17 @@ class MainActivity : AppCompatActivity() {
         overlay.stopScan()
         progressBar.visibility = View.INVISIBLE
         scanButton.isEnabled = true
-        scanButton.text = "Start scan"
-        scoreText.text = "--"
+        scanButton.setText(R.string.btn_start_scan)
+        shareButton.visibility = View.GONE
+        scoreText.text = getString(R.string.score_placeholder)
         scoreText.setTextColor(Color.parseColor("#FFDD00"))
-        levelText.text = "Tap Start scan to begin"
+        levelText.setText(R.string.tap_to_begin)
         actionTitle.visibility = View.GONE
         suggestionsBox.visibility = View.GONE
         scale.reset()
+        moodCat.setScore(50f)
         overlay.setAccentColor(Color.argb(255, 255, 221, 0))
+        updateBaselineLabel(null)
         updateHint()
     }
 
@@ -255,13 +340,17 @@ class MainActivity : AppCompatActivity() {
             imageProxy.close()
             return
         }
+        val imgW = imageProxy.width
+        val imgH = imageProxy.height
         val inputImage =
             InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
         faceDetector.process(inputImage)
             .addOnSuccessListener { faces ->
                 if (faces.isNotEmpty()) {
-                    val f = featuresOf(faces[0])
-                    runOnUiThread { onFrame(f) }
+                    val face = faces[0]
+                    val f = featuresOf(face)
+                    val coaching = coachRes(face, imgW, imgH)
+                    runOnUiThread { onFrame(f, coaching) }
                 }
             }
             .addOnFailureListener { e -> Log.e(TAG, "Face detection failed", e) }
@@ -280,31 +369,66 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun onFrame(f: ScoreModel.FrameFeatures) {
+    /** Positioning guidance from the face box relative to the frame. */
+    private fun coachRes(face: Face, imgW: Int, imgH: Int): Int {
+        if (imgW == 0 || imgH == 0) return R.string.coach_good
+        val box = face.boundingBox
+        val sizeRatio = box.width().toFloat() / imgW
+        val cx = box.exactCenterX() / imgW
+        val cy = box.exactCenterY() / imgH
+        return when {
+            sizeRatio < 0.22f -> R.string.coach_closer
+            sizeRatio > 0.80f -> R.string.coach_back
+            cx < 0.34f || cx > 0.66f || cy < 0.28f || cy > 0.72f -> R.string.coach_center
+            else -> R.string.coach_good
+        }
+    }
+
+    private fun onFrame(f: ScoreModel.FrameFeatures, coachingRes: Int) {
         when {
             isScanning -> {
                 frameFeatures.add(f)
                 val live = ScoreModel.score(frameFeatures)
                 scoreText.text = String.format(Locale.US, "%.1f", live)
-                levelText.text = ScoreModel.levelFor(live)
+                levelText.text = levelString(live)
                 applyScoreVisuals(live, animate = false)
+                hintText.setText(coachingRes)
             }
             !resultLocked -> {
                 val instant = ScoreModel.instant(f)
                 scoreText.text = String.format(Locale.US, "%.1f", instant)
-                levelText.text = "(live) ${ScoreModel.levelFor(instant)}"
+                levelText.text = getString(R.string.level_live, levelString(instant))
                 applyScoreVisuals(instant, animate = false)
+                hintText.setText(coachingRes)
             }
             // else: locked — leave the final score untouched.
         }
     }
 
-    /** Tint the score text, gradient marker and overlay oval to the score colour. */
     private fun applyScoreVisuals(score: Float, animate: Boolean) {
         val color = GradientScaleView.colorForScore(score)
         scoreText.setTextColor(color)
         scale.setScore(score, animate)
-        if (!resultLocked) overlay.setAccentColor(color)
+        moodCat.setScore(score)
+        overlay.setAccentColor(color)
+    }
+
+    private fun levelString(score: Float): String = getString(
+        when {
+            score < 20f -> R.string.level_cheerful
+            score < 40f -> R.string.level_happy
+            score < 60f -> R.string.level_neutral
+            score < 80f -> R.string.level_blue
+            else -> R.string.level_high
+        }
+    )
+
+    private fun updateBaselineLabel(delta: Float?) {
+        baselineText.text = if (delta == null) {
+            getString(R.string.baseline_none)
+        } else {
+            getString(R.string.baseline_vs, String.format(Locale.US, "%+.1f", delta))
+        }
     }
 
     // ---------------------------------------------------------------- result
@@ -315,14 +439,12 @@ class MainActivity : AppCompatActivity() {
         suggestionsBox.visibility = View.VISIBLE
         suggestionsBox.removeAllViews()
 
-        // 1) A supportive thought first (always, tuned to how things look).
-        affirmationFor(score)?.let { line ->
-            suggestionsBox.addView(styledLine(line, "#FFE9A8", 15f, bold = true, italic = true, density))
-        }
+        val affirmation = affirmationFor(score)
+        lastAffirmation = affirmation
+        suggestionsBox.addView(styledLine(affirmation, "#FFE9A8", 15f, true, true, density))
 
-        // 2) Practical suggestions.
         for (tip in suggestionsFor(score)) {
-            suggestionsBox.addView(styledLine("•  $tip", "#EEEEEE", 14f, bold = false, italic = false, density))
+            suggestionsBox.addView(styledLine("•  $tip", "#EEEEEE", 14f, false, false, density))
         }
     }
 
@@ -337,51 +459,38 @@ class MainActivity : AppCompatActivity() {
         this.text = text
         setTextColor(Color.parseColor(hex))
         textSize = sizeSp
-        if (bold) setTypeface(typeface, Typeface.BOLD_ITALIC)
-        else if (italic) setTypeface(typeface, Typeface.ITALIC)
+        setTypeface(typeface, if (bold) Typeface.BOLD_ITALIC else if (italic) Typeface.ITALIC else Typeface.NORMAL)
         layoutParams = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
         ).apply { topMargin = (6 * density).toInt() }
     }
 
-    /** Supportive / encouraging thought, always shown after a scan. */
-    private fun affirmationFor(score: Float): String = when {
-        score < 20f -> "You're glowing today — that good energy is yours to keep. 🌟"
-        score < 40f -> "Your face is carrying real warmth right now. Nice. ✨"
-        score < 60f -> "Steady and balanced — a solid place to be. 🌤️"
-        score < 80f -> "A softer day, and that's okay. You're doing better than you feel. 💙"
-        else -> "Hard moments never tell the whole story. You matter, and this passes. 💙"
+    private fun affinityIndex(score: Float): Int = when {
+        score < 20f -> 0
+        score < 40f -> 1
+        score < 60f -> 2
+        score < 80f -> 3
+        else -> 4
     }
 
-    private fun suggestionsFor(score: Float): List<String> = when {
-        score < 20f -> listOf(
-            "Keep doing what you're doing — it's working.",
-            "Bank this win: note one thing that made today good.",
-            "Share the energy — tell someone you appreciate them."
-        )
-        score < 40f -> listOf(
-            "A short walk or stretch keeps the good mood rolling.",
-            "Hydrate — low energy often just means low water.",
-            "Message a friend; connection lifts mood fast."
-        )
-        score < 60f -> listOf(
-            "Step outside for 10 minutes of daylight.",
-            "Try 5 slow breaths: in 4s, hold 4s, out 4s.",
-            "Put on one song you love and actually listen to it.",
-            "Drink a glass of water and roll your shoulders."
-        )
-        score < 80f -> listOf(
-            "Reach out to one person today — a call or a text.",
-            "Move your body for 15 minutes (walk, dance, anything).",
-            "Cut back on doomscrolling for the next hour.",
-            "Get some sunlight and eat a proper meal."
-        )
-        else -> listOf(
-            "Talk to someone you trust today — you don't have to carry it alone.",
-            "One small step: water, an open window, a step outside.",
-            "If this feeling lingers, a real check-in with a professional can help."
-        )
+    private fun affirmationFor(score: Float): String =
+        resources.getStringArray(R.array.affirmations)[affinityIndex(score)]
+
+    private fun suggestionsFor(score: Float): List<String> {
+        val resId = when {
+            score < 20f -> R.array.tips_cheerful
+            score < 40f -> R.array.tips_happy
+            score < 60f -> R.array.tips_neutral
+            score < 80f -> R.array.tips_blue
+            else -> R.array.tips_high
+        }
+        return resources.getStringArray(resId).toList()
+    }
+
+    private fun shareResult() {
+        val bitmap = ShareCard.render(this, lastScore, lastLevel, lastAffirmation)
+        ShareCard.share(this, bitmap, getString(R.string.share_chooser))
     }
 
     // ---------------------------------------------------------------- lifecycle
@@ -392,13 +501,26 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQ_CAMERA) {
-            if (grantResults.isNotEmpty() &&
-                grantResults[0] == PackageManager.PERMISSION_GRANTED
-            ) {
-                startCamera()
-            } else {
-                Toast.makeText(this, "Camera permission required", Toast.LENGTH_LONG).show()
+        when (requestCode) {
+            REQ_CAMERA -> {
+                if (grantResults.isNotEmpty() &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED
+                ) {
+                    startCamera()
+                } else {
+                    Toast.makeText(this, "Camera permission required", Toast.LENGTH_LONG).show()
+                }
+            }
+            REQ_NOTIF -> {
+                if (grantResults.isNotEmpty() &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED
+                ) {
+                    enableReminder()
+                } else {
+                    Toast.makeText(
+                        this, getString(R.string.notif_permission_needed), Toast.LENGTH_LONG
+                    ).show()
+                }
             }
         }
     }
@@ -413,6 +535,10 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "Depressometer"
         private const val REQ_CAMERA = 1
+        private const val REQ_NOTIF = 2
         private const val SCAN_DURATION_MS = 4000L
+        private const val MENU_HISTORY = 1
+        private const val MENU_INFO = 2
+        private const val MENU_REMIND = 3
     }
 }

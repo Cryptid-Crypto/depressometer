@@ -1,0 +1,99 @@
+<resources>
+    <string name="app_name">Dépressomètre</string>
+
+    <string name="history_title">Historique des scans</string>
+    <string name="info_title">À propos &amp; confidentialité</string>
+    <string name="btn_history">Historique</string>
+    <string name="btn_info">Info</string>
+    <string name="btn_scan_others">Scanner autrui</string>
+    <string name="btn_scan_self">Me scanner</string>
+    <string name="btn_remind_on">Rappels activés</string>
+    <string name="btn_remind_off">Me rappeler</string>
+
+    <string name="hint_front">Centrez votre visage dans l\'ovale</string>
+    <string name="hint_back">Pointez la caméra arrière vers la personne et restez immobile</string>
+    <string name="coach_closer">Rapprochez-vous un peu</string>
+    <string name="coach_back">Reculez un peu</string>
+    <string name="coach_center">Centrez votre visage dans l\'ovale</string>
+    <string name="coach_good">Parfait — restez immobile</string>
+    <string name="scan_complete">Scan terminé ✓</string>
+    <string name="no_face">Aucun visage détecté — réessayez</string>
+
+    <string name="score_caption">Score du Dépressomètre</string>
+    <string name="score_placeholder">--</string>
+    <string name="tap_to_begin">Touchez « Démarrer le scan »</string>
+    <string name="level_live">(direct) %1$s</string>
+    <string name="baseline_vs">par rapport à votre référence %1$s</string>
+    <string name="baseline_none">La référence se forme après quelques scans</string>
+    <string name="score_info">Le score combine des indices faciaux issus de la recherche sur la dépression — sourire (AU12/AU6), ouverture des yeux (EAR) et mouvement de la tête (FacePsy 2024 ; Girard &amp; Cohn 2009). Pour le plaisir ; pas un diagnostic.</string>
+
+    <string name="btn_start_scan">Démarrer le scan</string>
+    <string name="btn_scanning">Scan en cours…</string>
+    <string name="btn_scan_again">Scanner à nouveau</string>
+    <string name="btn_share">Partager le résultat</string>
+    <string name="btn_clear">Effacer</string>
+    <string name="what_can_help">Ce qui peut aider</string>
+
+    <string name="level_cheerful">JOYEUX</string>
+    <string name="level_happy">CONTENT</string>
+    <string name="level_neutral">NEUTRE</string>
+    <string name="level_blue">MOROSE</string>
+    <string name="level_high">DÉPRESSOMÈTRE ÉLEVÉ</string>
+
+    <string name="empty_history">Aucun scan pour l\'instant.\nRevenez et lancez votre premier scan !</string>
+    <string name="streak_label">Série en cours</string>
+    <string name="streak_days">%1$d jour(s)</string>
+    <string name="trend_label">Humeur dans le temps</string>
+    <string name="camera_front">Caméra avant</string>
+    <string name="camera_back">Caméra arrière</string>
+
+    <string name="notif_channel_name">Bilan quotidien</string>
+    <string name="notif_channel_desc">Un doux rappel quotidien pour scanner votre humeur</string>
+    <string name="notif_title">C\'est l\'heure de votre bilan quotidien 🐱</string>
+    <string name="notif_body">Ouvrez le Dépressomètre et scannez votre humeur.</string>
+    <string name="reminder_on_toast">Rappel quotidien réglé vers 20 h</string>
+    <string name="reminder_off_toast">Rappel quotidien désactivé</string>
+    <string name="notif_permission_needed">La permission de notifications est requise pour les rappels</string>
+
+    <string name="share_chooser">Partager votre résultat du Dépressomètre</string>
+    <string name="share_caption">Mon résultat du Dépressomètre</string>
+    <string name="share_footer">Dépressomètre — un scanner d\'humeur ludique. Pas un dispositif médical.</string>
+
+    <string name="info_body">Le Dépressomètre est un scanner d\'humeur ludique basé sur la caméra. Ce n\'est PAS un dispositif médical et il ne diagnostique, ne traite ni ne mesure la dépression.\n\nLe score combine des indices faciaux issus de la recherche : intensité du sourire (unités d\'action AU12/AU6), ouverture des yeux (indice de vigilance de type EAR), mouvement de la tête (indicateur de ralentissement psychomoteur) et expressivité faciale. Sources : Girard &amp; Cohn (ACII 2009) ; Jones et al. (2018) ; FacePsy (2024).\n\n⚠️ La « dépression souriante » existe, donc un sourire ne dicte jamais le score à lui seul.\n\nCONFIDENTIALITÉ : tout le traitement du visage se fait sur l\'appareil via Google ML Kit. Les images de la caméra sont analysées en mémoire puis immédiatement supprimées — aucune image n\'est stockée, envoyée ni partagée. Seuls le score numérique et son niveau sont enregistrés, dans un fichier local privé sur votre téléphone.\n\nSi vous êtes en difficulté, parlez-en à une personne de confiance ou à un professionnel qualifié.</string>
+
+    <string-array name="affirmations">
+        <item>Vous rayonnez aujourd\'hui — gardez cette belle énergie. 🌟</item>
+        <item>Votre visage dégage une vraie chaleur en ce moment. Bravo. ✨</item>
+        <item>Calme et équilibré — une belle place où être. 🌤️</item>
+        <item>Une journée plus douce, et c\'est correct. Vous allez mieux que vous le pensez. 💙</item>
+        <item>Les moments difficiles ne racontent pas toute l\'histoire. Vous comptez, et ça passera. 💙</item>
+    </string-array>
+
+    <string-array name="tips_cheerful">
+        <item>Continuez ce que vous faites — ça fonctionne.</item>
+        <item>Notez une chose qui a rendu la journée belle.</item>
+        <item>Partagez l\'énergie — dites à quelqu\'un que vous l\'appréciez.</item>
+    </string-array>
+    <string-array name="tips_happy">
+        <item>Une courte marche ou des étirements prolongent la bonne humeur.</item>
+        <item>Hydratez-vous — le manque d\'énergie vient souvent du manque d\'eau.</item>
+        <item>Écrivez à un ami ; le lien social remonte vite l\'humeur.</item>
+    </string-array>
+    <string-array name="tips_neutral">
+        <item>Sortez 10 minutes à la lumière du jour.</item>
+        <item>Faites 5 respirations lentes : inspirez 4 s, retenez 4 s, expirez 4 s.</item>
+        <item>Écoutez vraiment une chanson que vous aimez.</item>
+        <item>Buvez un verre d\'eau et roulez les épaules.</item>
+    </string-array>
+    <string-array name="tips_blue">
+        <item>Contactez une personne aujourd\'hui — un appel ou un message.</item>
+        <item>Bougez 15 minutes (marche, danse, ce que vous voulez).</item>
+        <item>Réduisez le défilement d\'écran pour la prochaine heure.</item>
+        <item>Prenez la lumière du soleil et un vrai repas.</item>
+    </string-array>
+    <string-array name="tips_high">
+        <item>Parlez à une personne de confiance aujourd\'hui — ne portez pas cela seul.</item>
+        <item>Un petit pas : de l\'eau, une fenêtre ouverte, une sortie dehors.</item>
+        <item>Si ce sentiment persiste, un vrai suivi avec un professionnel peut aider.</item>
+    </string-array>
+</resources>

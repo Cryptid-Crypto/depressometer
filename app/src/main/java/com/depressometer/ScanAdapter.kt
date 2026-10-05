@@ -31,7 +31,11 @@ class ScanAdapter(private val items: List<ScanRecord>) :
         holder.date.text = fmt.format(Date(record.timestamp))
         holder.score.text = String.format(Locale.US, "%.1f", record.score)
         holder.level.text = record.level
-        holder.camera.text = "${record.camera} camera"
+        holder.camera.text = if (record.camera == "Back") {
+            holder.itemView.context.getString(R.string.camera_back)
+        } else {
+            holder.itemView.context.getString(R.string.camera_front)
+        }
     }
 
     override fun getItemCount(): Int = items.size

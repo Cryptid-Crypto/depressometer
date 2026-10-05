@@ -17,7 +17,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Scan history"
+            android:text="@string/history_title"
             android:textColor="#FFFFFF"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -28,17 +28,62 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:minWidth="0dp"
-            android:text="Clear"
+            android:text="@string/btn_clear"
             android:textColor="#FF6666"
             android:textSize="14sp" />
     </LinearLayout>
+
+    <!-- Streak -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="4dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/streak_label"
+            android:textColor="#CCCCCC"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/streak_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 jour(s)"
+            android:textColor="#FFDD00"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Trend chart -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
+        android:text="@string/trend_label"
+        android:textColor="#CCCCCC"
+        android:textSize="14sp" />
+
+    <com.depressometer.TrendChartView
+        android:id="@+id/trend_chart"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_marginTop="4dp" />
 
     <TextView
         android:id="@+id/empty_text"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:text="No scans yet.\nGo back and run your first scan!"
+        android:text="@string/empty_history"
         android:textColor="#AAAAAA"
         android:textSize="16sp"
         android:visibility="gone" />
@@ -46,7 +91,8 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/history_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:clipToPadding="false"
         android:paddingBottom="12dp"
         android:scrollbars="vertical" />
