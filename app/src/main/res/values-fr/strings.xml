@@ -96,4 +96,36 @@
         <item>Un petit pas : de l\'eau, une fenêtre ouverte, une sortie dehors.</item>
         <item>Si ce sentiment persiste, un vrai suivi avec un professionnel peut aider.</item>
     </string-array>
+
+    <string name="points_title">Points et boutique</string>
+    <string name="points_menu">Points (%1$d)</string>
+    <string name="points_balance">Vos points</string>
+    <string name="points_earn_title">Gagner des points</string>
+    <string name="points_earn_hint">Obtenez un score sous 40 lors d\'un scan pour gagner des points (15 points sous 20). Ou regardez une courte pub.</string>
+    <string name="points_watch_ad">Regarder une pub pour +25 points</string>
+    <string name="points_ad_ready">Prêt — %1$d pub(s) restante(s) aujourd\'hui</string>
+    <string name="points_ad_remaining">%1$d pub(s) restante(s) aujourd\'hui</string>
+    <string name="points_ad_loading">Chargement de la pub…</string>
+    <string name="points_ad_cap">Limite quotidienne atteinte — revenez demain</string>
+    <string name="points_ad_reward_earned">Bravo — +%1$d points !</string>
+    <string name="points_shop_title">Boutique</string>
+    <string name="points_free">Gratuit</string>
+    <string name="points_cost">%1$d points</string>
+    <string name="points_buy">Acheter</string>
+    <string name="points_equip">Équiper</string>
+    <string name="points_equipped">Équipé</string>
+    <string name="points_not_enough">Pas assez de points</string>
+    <string name="points_purchased">Débloqué : %1$s !</string>
+    <string name="points_earned_scan">+%1$d points pour une bonne humeur ! 🎉</string>
+
+    <string name="item_skin_classic">Chat classique</string>
+    <string name="item_skin_neon">Chat cyber néon</string>
+    <string name="item_skin_gold">Chat doré</string>
+    <string name="item_skin_midnight">Chat de minuit</string>
+    <string name="item_badge_explorer">Badge : Explorateur d\'humeur</string>
+    <string name="item_badge_zen">Badge : Chat zen</string>
+    <string name="item_badge_master">Badge : Maître d\'humeur</string>
+    <string name="badge_explorer">Explorateur d\'humeur</string>
+    <string name="badge_zen">Chat zen</string>
+    <string name="badge_master">Maître d\'humeur</string>
 </resources>

@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- Daily check-in reminders (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Rewarded ads -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-feature
         android:name="android.hardware.camera.any"
@@ -39,6 +41,17 @@
             android:exported="false"
             android:label="@string/info_title"
             android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".PointsActivity"
+            android:exported="false"
+            android:label="@string/points_title"
+            android:screenOrientation="portrait" />
+
+        <!-- AdMob: Google TEST application id — replace with your own before publishing -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

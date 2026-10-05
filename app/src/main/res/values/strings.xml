@@ -106,4 +106,37 @@
         <item>One small step: water, an open window, a step outside.</item>
         <item>If this feeling lingers, a real check-in with a professional can help.</item>
     </string-array>
+
+    <!-- Points & shop -->
+    <string name="points_title">Points &amp; shop</string>
+    <string name="points_menu">Points (%1$d)</string>
+    <string name="points_balance">Your points</string>
+    <string name="points_earn_title">Earn points</string>
+    <string name="points_earn_hint">Score under 40 in a scan to earn points (15 points when under 20). Or watch a short ad.</string>
+    <string name="points_watch_ad">Watch an ad for +25 points</string>
+    <string name="points_ad_ready">Ready — %1$d ad(s) left today</string>
+    <string name="points_ad_remaining">%1$d ad(s) left today</string>
+    <string name="points_ad_loading">Loading ad…</string>
+    <string name="points_ad_cap">Daily ad limit reached — come back tomorrow</string>
+    <string name="points_ad_reward_earned">Nice — +%1$d points!</string>
+    <string name="points_shop_title">Shop</string>
+    <string name="points_free">Free</string>
+    <string name="points_cost">%1$d points</string>
+    <string name="points_buy">Buy</string>
+    <string name="points_equip">Equip</string>
+    <string name="points_equipped">Equipped</string>
+    <string name="points_not_enough">Not enough points yet</string>
+    <string name="points_purchased">Unlocked %1$s!</string>
+    <string name="points_earned_scan">+%1$d points for a good mood! 🎉</string>
+
+    <string name="item_skin_classic">Classic cat</string>
+    <string name="item_skin_neon">Neon cyber cat</string>
+    <string name="item_skin_gold">Golden cat</string>
+    <string name="item_skin_midnight">Midnight cat</string>
+    <string name="item_badge_explorer">Badge: Mood Explorer</string>
+    <string name="item_badge_zen">Badge: Zen Cat</string>
+    <string name="item_badge_master">Badge: Mood Master</string>
+    <string name="badge_explorer">Mood Explorer</string>
+    <string name="badge_zen">Zen Cat</string>
+    <string name="badge_master">Mood Master</string>
 </resources>

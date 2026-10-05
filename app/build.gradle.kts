@@ -11,8 +11,8 @@ android {
         applicationId = "com.depressometer"
         minSdk = 21
         targetSdk = 34
-        versionCode = 4
-        versionName = "1.3.0"
+        versionCode = 5
+        versionName = "1.4.0"
     }
 
     signingConfigs {
@@ -61,6 +61,9 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+
+    // AdMob (rewarded ads for the points shop)
+    implementation("com.google.android.gms:play-services-ads:23.6.0")
 
     // CameraX
     implementation("androidx.camera:camera-core:1.3.4")

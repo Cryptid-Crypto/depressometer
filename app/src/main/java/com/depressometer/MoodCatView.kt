@@ -11,6 +11,7 @@ import android.view.View
 /**
  * A tiny cat companion whose colour and expression reflect the current score.
  * Low score (green) = happy cat; high score (dark blue) = droopy cat.
+ * An equipped shop skin can override the fur colour.
  */
 class MoodCatView @JvmOverloads constructor(
     context: Context,
@@ -20,6 +21,7 @@ class MoodCatView @JvmOverloads constructor(
 
     private val headPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
     private val earPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+    private val innerEarPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
     private val eyePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
         color = Color.parseColor("#1E1E2E")
@@ -32,9 +34,18 @@ class MoodCatView @JvmOverloads constructor(
     private val mouthPath = Path()
 
     private var score = 50f
+    private var skinFur: Int? = null
+    private var skinAccent: Int? = null
 
     fun setScore(score: Float) {
         this.score = score.coerceIn(0f, 100f)
+        invalidate()
+    }
+
+    /** Override fur colours (shop skin). Pass nulls for the mood-derived default. */
+    fun setSkin(fur: Int?, accent: Int?) {
+        skinFur = fur
+        skinAccent = accent
         invalidate()
     }
 
@@ -42,12 +53,15 @@ class MoodCatView @JvmOverloads constructor(
         super.onDraw(canvas)
         val w = width.toFloat()
         val h = height.toFloat()
-        val accent = GradientScaleView.colorForScore(score)
-        // soften the accent a little for the fur
-        val fur = blend(accent, Color.WHITE, 0.35f)
+
+        val moodColor = GradientScaleView.colorForScore(score)
+        val fur = skinFur ?: blend(moodColor, Color.WHITE, 0.35f)
+        val dark = skinAccent ?: blend(moodColor, Color.BLACK, 0.30f)
+
         headPaint.color = fur
         earPaint.color = fur
-        strokePaint.color = blend(accent, Color.BLACK, 0.25f)
+        strokePaint.color = dark
+        innerEarPaint.color = dark
 
         val cx = w / 2f
         val cy = h * 0.56f
@@ -55,7 +69,6 @@ class MoodCatView @JvmOverloads constructor(
 
         // ears
         val earH = r * 0.7f
-        val earW = r * 0.55f
         val earL = Path().apply {
             moveTo(cx - r * 0.75f, cy - r * 0.55f)
             lineTo(cx - r * 0.55f, cy - r * 0.55f - earH)
@@ -70,15 +83,13 @@ class MoodCatView @JvmOverloads constructor(
         }
         canvas.drawPath(earL, earPaint)
         canvas.drawPath(earR, earPaint)
-        run { // inner ears
-            val inner = Paint(earPaint).apply { color = blend(accent, Color.BLACK, 0.45f) }
-            canvas.drawPath(earL, inner)
-            canvas.drawPath(earR, inner)
-        }
+        canvas.drawPath(earL, innerEarPaint) // darkest inner triangle overlay
+        canvas.drawPath(earR, innerEarPaint)
+
         // head
         canvas.drawCircle(cx, cy, r, headPaint)
 
-        // eyes (squint a bit when happy, wider when low)
+        // eyes (squint when happy, wider when low)
         val mood = (score - 50f) / 50f // -1 happy .. 1 sad
         val eyeH = r * (0.16f + 0.06f * mood.coerceAtLeast(0f))
         val eyeW = r * 0.15f
@@ -95,7 +106,7 @@ class MoodCatView @JvmOverloads constructor(
         }
         canvas.drawPath(nose, eyePaint)
 
-        // mouth: smiles (arc up) when happy, droops when low
+        // mouth: smiles when happy, droops when low
         val my = cy + r * 0.30f
         val mw = r * 0.30f
         mouthPath.reset()

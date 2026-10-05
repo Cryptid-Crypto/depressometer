@@ -27,6 +27,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.ads.MobileAds
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
@@ -57,6 +58,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var menuButton: Button
     private lateinit var actionTitle: TextView
     private lateinit var suggestionsBox: LinearLayout
+    private lateinit var badgeText: TextView
+
+    private lateinit var pointsStore: PointsStore
+    private var lastEarnedPoints = 0
 
     private var cameraProvider: ProcessCameraProvider? = null
     private var lensFacing = CameraSelector.LENS_FACING_FRONT
@@ -94,7 +99,10 @@ class MainActivity : AppCompatActivity() {
         menuButton = findViewById(R.id.btn_menu)
         actionTitle = findViewById(R.id.action_title)
         suggestionsBox = findViewById(R.id.suggestions_box)
+        badgeText = findViewById(R.id.badge_text)
 
+        MobileAds.initialize(this)
+        pointsStore = PointsStore(this)
         historyStore = HistoryStore(this)
 
         val options = FaceDetectorOptions.Builder()
@@ -115,6 +123,7 @@ class MainActivity : AppCompatActivity() {
         scale.setScore(50f, animate = false)
         moodCat.setScore(50f)
         updateBaselineLabel(null)
+        applyCosmetics()
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
             == PackageManager.PERMISSION_GRANTED
@@ -129,15 +138,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun showMenu() {
         val popup = PopupMenu(this, menuButton)
-        popup.menu.add(0, MENU_HISTORY, 0, getString(R.string.btn_history))
-        popup.menu.add(0, MENU_INFO, 1, getString(R.string.btn_info))
+        popup.menu.add(0, MENU_POINTS, 0, getString(R.string.points_menu, pointsStore.balance()))
+        popup.menu.add(0, MENU_HISTORY, 1, getString(R.string.btn_history))
+        popup.menu.add(0, MENU_INFO, 2, getString(R.string.btn_info))
         popup.menu.add(
-            0, MENU_REMIND, 2,
+            0, MENU_REMIND, 3,
             if (remindersEnabled()) getString(R.string.btn_remind_on)
             else getString(R.string.btn_remind_off)
         )
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
+                MENU_POINTS -> { startActivity(Intent(this, PointsActivity::class.java)); true }
                 MENU_HISTORY -> { startActivity(Intent(this, HistoryActivity::class.java)); true }
                 MENU_INFO -> { startActivity(Intent(this, InfoActivity::class.java)); true }
                 MENU_REMIND -> { toggleReminder(); true }
@@ -305,6 +316,14 @@ class MainActivity : AppCompatActivity() {
         val cameraName = if (lensFacing == CameraSelector.LENS_FACING_BACK) "Back" else "Front"
         historyStore.add(ScanRecord(System.currentTimeMillis(), finalScore, level, cameraName))
 
+        // Reward good-mood scans with points.
+        lastEarnedPoints = when {
+            finalScore < 20f -> PointsStore.POINTS_SCORE_GREAT
+            finalScore < 40f -> PointsStore.POINTS_SCORE_GOOD
+            else -> 0
+        }
+        if (lastEarnedPoints > 0) pointsStore.addPoints(lastEarnedPoints)
+
         showResult(finalScore)
 
         shareButton.visibility = View.VISIBLE
@@ -443,6 +462,12 @@ class MainActivity : AppCompatActivity() {
         lastAffirmation = affirmation
         suggestionsBox.addView(styledLine(affirmation, "#FFE9A8", 15f, true, true, density))
 
+        if (lastEarnedPoints > 0) {
+            suggestionsBox.addView(
+                styledLine(getString(R.string.points_earned_scan, lastEarnedPoints), "#7CFFB2", 14f, true, false, density)
+            )
+        }
+
         for (tip in suggestionsFor(score)) {
             suggestionsBox.addView(styledLine("•  $tip", "#EEEEEE", 14f, false, false, density))
         }
@@ -525,6 +550,20 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /** Apply the equipped shop skin + badge. */
+    private fun applyCosmetics() {
+        val skin = Shop.byId(pointsStore.equippedSkin()) ?: Shop.defaultSkin()
+        moodCat.setSkin(skin.fur, skin.accent)
+        val badge = Shop.byId(pointsStore.equippedBadge())
+        badgeText.text = badge?.badgeRes?.let { getString(it) } ?: ""
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Cosmetics may have changed on the points screen.
+        applyCosmetics()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         handler.removeCallbacks(scanTicker)
@@ -537,6 +576,7 @@ class MainActivity : AppCompatActivity() {
         private const val REQ_CAMERA = 1
         private const val REQ_NOTIF = 2
         private const val SCAN_DURATION_MS = 4000L
+        private const val MENU_POINTS = 0
         private const val MENU_HISTORY = 1
         private const val MENU_INFO = 2
         private const val MENU_REMIND = 3

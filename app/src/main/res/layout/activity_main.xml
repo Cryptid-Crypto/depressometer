@@ -147,6 +147,14 @@
                     android:text="@string/tap_to_begin"
                     android:textColor="#FFFFFF"
                     android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/badge_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#FF2BD6"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
 
