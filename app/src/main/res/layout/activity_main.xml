@@ -138,6 +138,21 @@
             android:textSize="18sp"
             android:gravity="center" />
 
+        <com.depressometer.GradientScaleView
+            android:id="@+id/mood_scale"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="6dp" />
+
+        <TextView
+            android:id="@+id/score_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Score blends facial cues from depression research — smile (AU12/AU6), eye openness (EAR) and head movement (FacePsy 2024; Girard &amp; Cohn 2009). For fun; not a diagnosis."
+            android:textColor="#8899AA"
+            android:textSize="10sp"
+            android:gravity="center" />
+
         <ProgressBar
             android:id="@+id/scan_progress"
             style="?android:attr/progressBarStyleHorizontal"

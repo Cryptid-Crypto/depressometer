@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -29,9 +30,9 @@ import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
+import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import kotlin.math.abs
 
 class MainActivity : AppCompatActivity() {
 
@@ -41,6 +42,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var previewView: PreviewView
     private lateinit var overlay: FaceOverlayView
+    private lateinit var scale: GradientScaleView
     private lateinit var scoreText: TextView
     private lateinit var levelText: TextView
     private lateinit var hintText: TextView
@@ -57,7 +59,7 @@ class MainActivity : AppCompatActivity() {
     private var isScanning = false
     private var resultLocked = false
     private var scanEndAt = 0L
-    private val scanSamples = mutableListOf<Float>()
+    private val frameFeatures = mutableListOf<ScoreModel.FrameFeatures>()
 
     private val handler = Handler(Looper.getMainLooper())
 
@@ -67,6 +69,7 @@ class MainActivity : AppCompatActivity() {
 
         previewView = findViewById(R.id.preview)
         overlay = findViewById(R.id.overlay)
+        scale = findViewById(R.id.mood_scale)
         scoreText = findViewById(R.id.score_text)
         levelText = findViewById(R.id.level_text)
         hintText = findViewById(R.id.hint_text)
@@ -94,6 +97,7 @@ class MainActivity : AppCompatActivity() {
 
         updateSwitchLabel()
         updateHint()
+        scale.setScore(50f, animate = false) // neutral resting marker
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
             == PackageManager.PERMISSION_GRANTED
@@ -144,10 +148,7 @@ class MainActivity : AppCompatActivity() {
     private fun switchCamera() {
         if (isScanning) return
         lensFacing = if (lensFacing == CameraSelector.LENS_FACING_FRONT)
-            CameraSelector.LENS_FACING_BACK
-        else
-            CameraSelector.LENS_FACING_FRONT
-
+            CameraSelector.LENS_FACING_BACK else CameraSelector.LENS_FACING_FRONT
         updateSwitchLabel()
         updateHint()
         resetResult()
@@ -155,7 +156,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateSwitchLabel() {
-        // If currently on the front camera, the action offers to scan *others*.
         switchButton.text = if (lensFacing == CameraSelector.LENS_FACING_FRONT)
             "Scan others" else "Scan self"
     }
@@ -171,7 +171,7 @@ class MainActivity : AppCompatActivity() {
         if (isScanning) return
         isScanning = true
         resultLocked = false
-        scanSamples.clear()
+        frameFeatures.clear()
 
         overlay.startScan()
         progressBar.visibility = View.VISIBLE
@@ -182,6 +182,7 @@ class MainActivity : AppCompatActivity() {
         suggestionsBox.visibility = View.GONE
         scoreText.text = "--"
         levelText.text = "Hold still…"
+        scale.reset()
 
         scanEndAt = System.currentTimeMillis() + SCAN_DURATION_MS
         handler.post(scanTicker)
@@ -204,28 +205,27 @@ class MainActivity : AppCompatActivity() {
         scanButton.isEnabled = true
         scanButton.text = "Scan again"
 
-        if (scanSamples.isEmpty()) {
-            // Nothing detected — don't lock or save a meaningless result.
+        if (frameFeatures.isEmpty()) {
             resultLocked = false
             scoreText.text = "--"
             levelText.text = "No face detected — try again"
+            scale.reset()
             return
         }
 
-        // Lock in the average of every frame captured during the scan.
-        val finalScore = scanSamples.average().toFloat().coerceIn(0f, 100f)
+        val finalScore = ScoreModel.score(frameFeatures)
         resultLocked = true
 
-        scoreText.text = String.format(java.util.Locale.US, "%.1f", finalScore)
-        levelText.text = levelForScore(finalScore)
+        val level = ScoreModel.levelFor(finalScore)
+        scoreText.text = String.format(Locale.US, "%.1f", finalScore)
+        levelText.text = level
+        applyScoreVisuals(finalScore, animate = true)
         hintText.text = "Scan complete ✓"
 
         val cameraName = if (lensFacing == CameraSelector.LENS_FACING_BACK) "Back" else "Front"
-        historyStore.add(
-            ScanRecord(System.currentTimeMillis(), finalScore, levelForScore(finalScore), cameraName)
-        )
+        historyStore.add(ScanRecord(System.currentTimeMillis(), finalScore, level, cameraName))
 
-        showSuggestions(finalScore)
+        showResult(finalScore)
     }
 
     private fun resetResult() {
@@ -237,10 +237,12 @@ class MainActivity : AppCompatActivity() {
         scanButton.isEnabled = true
         scanButton.text = "Start scan"
         scoreText.text = "--"
+        scoreText.setTextColor(Color.parseColor("#FFDD00"))
         levelText.text = "Tap Start scan to begin"
         actionTitle.visibility = View.GONE
         suggestionsBox.visibility = View.GONE
-        hintText.text = ""
+        scale.reset()
+        overlay.setAccentColor(Color.argb(255, 255, 221, 0))
         updateHint()
     }
 
@@ -258,109 +260,127 @@ class MainActivity : AppCompatActivity() {
         faceDetector.process(inputImage)
             .addOnSuccessListener { faces ->
                 if (faces.isNotEmpty()) {
-                    val score = computeScore(faces[0])
-                    runOnUiThread { onScore(score) }
+                    val f = featuresOf(faces[0])
+                    runOnUiThread { onFrame(f) }
                 }
             }
             .addOnFailureListener { e -> Log.e(TAG, "Face detection failed", e) }
             .addOnCompleteListener { imageProxy.close() }
     }
 
-    private fun onScore(instant: Float) {
+    private fun featuresOf(face: Face): ScoreModel.FrameFeatures {
+        val leftEye = face.leftEyeOpenProbability ?: 0.5f
+        val rightEye = face.rightEyeOpenProbability ?: 0.5f
+        return ScoreModel.FrameFeatures(
+            smile = face.smilingProbability ?: 0.5f,
+            eyeOpen = (leftEye + rightEye) / 2f,
+            yaw = face.headEulerAngleY,
+            pitch = face.headEulerAngleX,
+            roll = face.headEulerAngleZ
+        )
+    }
+
+    private fun onFrame(f: ScoreModel.FrameFeatures) {
         when {
             isScanning -> {
-                scanSamples.add(instant)
-                val avg = scanSamples.average().toFloat()
-                scoreText.text = String.format(java.util.Locale.US, "%.1f", avg)
-                levelText.text = levelForScore(avg)
+                frameFeatures.add(f)
+                val live = ScoreModel.score(frameFeatures)
+                scoreText.text = String.format(Locale.US, "%.1f", live)
+                levelText.text = ScoreModel.levelFor(live)
+                applyScoreVisuals(live, animate = false)
             }
             !resultLocked -> {
-                // Live preview before a scan starts.
-                scoreText.text = String.format(java.util.Locale.US, "%.1f", instant)
-                levelText.text = "(live) ${levelForScore(instant)}"
+                val instant = ScoreModel.instant(f)
+                scoreText.text = String.format(Locale.US, "%.1f", instant)
+                levelText.text = "(live) ${ScoreModel.levelFor(instant)}"
+                applyScoreVisuals(instant, animate = false)
             }
-            // else: result is locked — leave the final score untouched.
+            // else: locked — leave the final score untouched.
         }
     }
 
-    /**
-     * Playful, non-clinical heuristic. Lower score = happier.
-     *  - smilingProbability pushes the score down
-     *  - closed eyes / a big head tilt push it up
-     */
-    private fun computeScore(face: Face): Float {
-        val smiling = face.smilingProbability ?: 0.5f
-        val leftEye = face.leftEyeOpenProbability ?: 0.5f
-        val rightEye = face.rightEyeOpenProbability ?: 0.5f
-        val tilt = abs(face.headEulerAngleZ) / 90f
-
-        var score = 50f
-        score -= (smiling - 0.5f) * 80f
-        score += (1f - ((leftEye + rightEye) / 2f)) * 20f
-        score += tilt * 10f
-        return score.coerceIn(0f, 100f)
+    /** Tint the score text, gradient marker and overlay oval to the score colour. */
+    private fun applyScoreVisuals(score: Float, animate: Boolean) {
+        val color = GradientScaleView.colorForScore(score)
+        scoreText.setTextColor(color)
+        scale.setScore(score, animate)
+        if (!resultLocked) overlay.setAccentColor(color)
     }
 
-    private fun levelForScore(score: Float): String = when {
-        score < 20f -> "CHEERFUL"
-        score < 40f -> "HAPPY"
-        score < 60f -> "NEUTRAL"
-        score < 80f -> "BLUE"
-        else -> "DEPRESS-O-METER HIGH"
-    }
+    // ---------------------------------------------------------------- result
 
-    // ---------------------------------------------------------------- suggestions
-
-    private fun showSuggestions(score: Float) {
-        val tips = suggestionsFor(score)
+    private fun showResult(score: Float) {
+        val density = resources.displayMetrics.density
         actionTitle.visibility = View.VISIBLE
         suggestionsBox.visibility = View.VISIBLE
         suggestionsBox.removeAllViews()
 
-        val density = resources.displayMetrics.density
-        for (tip in tips) {
-            val tv = TextView(this).apply {
-                text = "•  $tip"
-                setTextColor(Color.parseColor("#EEEEEE"))
-                textSize = 14f
-                layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply { topMargin = (6 * density).toInt() }
-            }
-            suggestionsBox.addView(tv)
+        // 1) A supportive thought first (always, tuned to how things look).
+        affirmationFor(score)?.let { line ->
+            suggestionsBox.addView(styledLine(line, "#FFE9A8", 15f, bold = true, italic = true, density))
         }
+
+        // 2) Practical suggestions.
+        for (tip in suggestionsFor(score)) {
+            suggestionsBox.addView(styledLine("•  $tip", "#EEEEEE", 14f, bold = false, italic = false, density))
+        }
+    }
+
+    private fun styledLine(
+        text: String,
+        hex: String,
+        sizeSp: Float,
+        bold: Boolean,
+        italic: Boolean,
+        density: Float
+    ): TextView = TextView(this).apply {
+        this.text = text
+        setTextColor(Color.parseColor(hex))
+        textSize = sizeSp
+        if (bold) setTypeface(typeface, Typeface.BOLD_ITALIC)
+        else if (italic) setTypeface(typeface, Typeface.ITALIC)
+        layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply { topMargin = (6 * density).toInt() }
+    }
+
+    /** Supportive / encouraging thought, always shown after a scan. */
+    private fun affirmationFor(score: Float): String = when {
+        score < 20f -> "You're glowing today — that good energy is yours to keep. 🌟"
+        score < 40f -> "Your face is carrying real warmth right now. Nice. ✨"
+        score < 60f -> "Steady and balanced — a solid place to be. 🌤️"
+        score < 80f -> "A softer day, and that's okay. You're doing better than you feel. 💙"
+        else -> "Hard moments never tell the whole story. You matter, and this passes. 💙"
     }
 
     private fun suggestionsFor(score: Float): List<String> = when {
         score < 20f -> listOf(
-            "Great mood detected — keep doing what you're doing.",
-            "Share the good energy: message a friend you appreciate.",
-            "Bank this win — note what made today good."
+            "Keep doing what you're doing — it's working.",
+            "Bank this win: note one thing that made today good.",
+            "Share the energy — tell someone you appreciate them."
         )
         score < 40f -> listOf(
-            "Solid mood. A short walk or stretch can keep it going.",
-            "Hydrate — dehydration often reads as low energy.",
-            "Text someone you like; connection lifts mood fast."
+            "A short walk or stretch keeps the good mood rolling.",
+            "Hydrate — low energy often just means low water.",
+            "Message a friend; connection lifts mood fast."
         )
         score < 60f -> listOf(
             "Step outside for 10 minutes of daylight.",
             "Try 5 slow breaths: in 4s, hold 4s, out 4s.",
-            "Put on one song you love and actually listen.",
-            "Drink a glass of water and stretch your shoulders."
+            "Put on one song you love and actually listen to it.",
+            "Drink a glass of water and roll your shoulders."
         )
         score < 80f -> listOf(
             "Reach out to one person today — a call or a text.",
             "Move your body for 15 minutes (walk, dance, anything).",
             "Cut back on doomscrolling for the next hour.",
-            "Get some sunlight and a proper meal.",
-            "Be kind to yourself — this is a fun app, not a diagnosis."
+            "Get some sunlight and eat a proper meal."
         )
         else -> listOf(
             "Talk to someone you trust today — you don't have to carry it alone.",
-            "Small step: drink water, open a window, step outside.",
-            "Consider a real check-in with a professional if this persists.",
-            "This app is just for fun — it is NOT a medical assessment."
+            "One small step: water, an open window, a step outside.",
+            "If this feeling lingers, a real check-in with a professional can help."
         )
     }
 

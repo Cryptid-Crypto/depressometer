@@ -14,6 +14,7 @@ import android.view.animation.AccelerateDecelerateInterpolator
 /**
  * Draws a dimmed backdrop with a clear oval "face target" and an animated
  * scanning line that sweeps top-to-bottom while a scan is running.
+ * The oval / scan-line accent colour tracks the current mood score.
  */
 class FaceOverlayView @JvmOverloads constructor(
     context: Context,
@@ -42,9 +43,16 @@ class FaceOverlayView @JvmOverloads constructor(
     private val path = Path()
     private val ovalRect = RectF()
 
+    private var accent = Color.argb(255, 255, 221, 0)
     private var scanning = false
     private var scanProgress = 0f
     private var animator: ValueAnimator? = null
+
+    /** Tint the oval / scan line to match the current score colour. */
+    fun setAccentColor(color: Int) {
+        accent = color
+        invalidate()
+    }
 
     fun startScan() {
         scanning = true
@@ -94,16 +102,20 @@ class FaceOverlayView @JvmOverloads constructor(
         path.fillType = Path.FillType.EVEN_ODD
         canvas.drawPath(path, dimPaint)
 
-        ovalPaint.color = if (scanning) Color.argb(255, 255, 221, 0)
-                          else Color.argb(150, 255, 255, 255)
+        ovalPaint.color = if (scanning) accent else withAlpha(accent, 150)
         canvas.drawOval(ovalRect, ovalPaint)
 
         if (scanning) {
             val y = ovalRect.top + scanProgress * ovalRect.height()
+            scanGlowPaint.color = withAlpha(accent, 60)
+            scanLinePaint.color = withAlpha(accent, 210)
             canvas.drawLine(ovalRect.left, y, ovalRect.right, y, scanGlowPaint)
             canvas.drawLine(ovalRect.left, y, ovalRect.right, y, scanLinePaint)
         }
     }
+
+    private fun withAlpha(color: Int, alpha: Int): Int =
+        Color.argb(alpha, Color.red(color), Color.green(color), Color.blue(color))
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
