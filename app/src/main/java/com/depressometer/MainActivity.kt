@@ -2,158 +2,166 @@ package com.depressometer
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.camera.core.*
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ExperimentalGetImage
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageProxy
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.face detection.*
-import java.util.concurrent.ExecutionException
+import com.google.mlkit.vision.face.Face
+import com.google.mlkit.vision.face.FaceDetection
+import com.google.mlkit.vision.face.FaceDetector
+import com.google.mlkit.vision.face.FaceDetectorOptions
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import kotlin.math.abs
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var faceDetector: FaceDetector
-    private var cameraProvider: ProcessCameraProvider? = null
-    private var imageAnalysis: ImageAnalysis? = null
+    private lateinit var cameraExecutor: ExecutorService
+    private lateinit var previewView: PreviewView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Initialize ML Kit face detector
+        previewView = findViewById(R.id.preview)
+
         val options = FaceDetectorOptions.Builder()
             .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
-            .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
+            .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_NONE)
             .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
             .build()
         faceDetector = FaceDetection.getClient(options)
+        cameraExecutor = Executors.newSingleThreadExecutor()
 
-        // Request camera permission if not granted
-        if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 1)
-        } else {
-            startCamera()
-        }
-
-        // Disclaimer text
-        val disclaimer = findViewById<TextView>(R.id.disclaimer_text)
-        disclaimer.text = (
+        findViewById<TextView>(R.id.disclaimer_text).text =
             "Depressometer\n" +
-            "A playful camera-based mood scanner.\n" +
-            "NOT a medical diagnosis or treatment.\n" +
-            "If you're struggling, please consult a professional."
-        )
+                "A playful camera-based mood scanner.\n" +
+                "NOT a medical diagnosis or treatment.\n" +
+                "If you're struggling, please consult a professional."
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            startCamera()
+        } else {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), REQ_CAMERA)
+        }
     }
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-
         cameraProviderFuture.addListener({
-            cameraProvider = cameraProviderFuture.get()
-            bindCameraLivePreview()
-        }, null)
+            try {
+                bindUseCases(cameraProviderFuture.get())
+            } catch (e: Exception) {
+                Log.e(TAG, "Camera provider error", e)
+            }
+        }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun bindCameraLivePreview() {
-        if (cameraProvider == null) return
+    private fun bindUseCases(cameraProvider: ProcessCameraProvider) {
+        val preview = Preview.Builder().build().also {
+            it.setSurfaceProvider(previewView.surfaceProvider)
+        }
 
-        // Image analysis use case: receives camera frames for analysis
-        imageAnalysis = ImageAnalysis.Builder()
-            .setTargetResolution(androidx.camera.core.Size(1280, 720))
+        val imageAnalysis = ImageAnalysis.Builder()
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
+        imageAnalysis.setAnalyzer(cameraExecutor) { imageProxy -> processImage(imageProxy) }
 
-        // Set analyzer
-        imageAnalysis?.setAnalyzer(cameraExecutor) { image ->
-            if (image != null) {
-                val inputImage = InputImage.fromMediaImage(image, image.imageInfo.cameraSensorOrientation)
-                val task = faceDetector.process(inputImage)
-                task.addOnSuccessListener { faces ->
-                    if (faces.isNotEmpty()) {
-                        // First face → compute "score"
-                        val face = faces[0]
-                        val score = computeScore(face)
-                        runOnUiThread {
-                            val scoreView = findViewById<TextView>(R.id.score_text)
-                            scoreView.text = "Depressometer Score: ${score.toStringAsFixed(1)}"
-                            val levelText = findViewById<TextView>(R.id.level_text)
-                            levelText.text = levelForScore(score)
-                        }
-                    }
+        val selector = CameraSelector.DEFAULT_FRONT_CAMERA
+        cameraProvider.unbindAll()
+        cameraProvider.bindToLifecycle(this, selector, preview, imageAnalysis)
+    }
+
+    @ExperimentalGetImage
+    private fun processImage(imageProxy: ImageProxy) {
+        val mediaImage = imageProxy.image
+        if (mediaImage == null) {
+            imageProxy.close()
+            return
+        }
+        val inputImage =
+            InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+        faceDetector.process(inputImage)
+            .addOnSuccessListener { faces ->
+                if (faces.isNotEmpty()) {
+                    val score = computeScore(faces[0])
+                    runOnUiThread { showScore(score) }
                 }
-                task.addOnFailureListener { e -> Log.e("Depressometer", "Face detection failed", e) }
             }
-        }
-
-        imageAnalysis?.setUseCaseDefaults(
-            Preview.PreviewBuilder.setLensFacing(LensFacing.FRONT)
-        )
-
-        // Preview use case: shows camera feed
-        val preview = Preview.Builder().build().also {
-            it.setSurfaceProvider(PreviewViewSurfaceProvider(findViewById(R.id.preview)))
-        }
-
-        cameraProvider?.bindToLivePreview(
-            listOf(imageAnalysis, preview),
-            cameraExecutor
-        )
+            .addOnFailureListener { e -> Log.e(TAG, "Face detection failed", e) }
+            .addOnCompleteListener { imageProxy.close() }
     }
 
-    /** Simple heuristic: lower score = more smiling = "less depressed" */
+    /**
+     * Playful, non-clinical heuristic. Lower score = happier.
+     *  - smilingProbability pushes the score down
+     *  - closed eyes / big head tilt push it up
+     */
     private fun computeScore(face: Face): Float {
-        val bounds = face.boundingBox
-        // Mouth region approximation from face landmarks
-        var smileScore = 50.0f  // baseline neutral
+        val smiling = face.smilingProbability ?: 0.5f
+        val leftEye = face.leftEyeOpenProbability ?: 0.5f
+        val rightEye = face.rightEyeOpenProbability ?: 0.5f
+        val tilt = abs(face.headEulerAngleZ) / 90f
 
-        val landmarks = face.getLandmarks()
-        if (landmarks != null) {
-            // Try to get mouth landmarks
-            val mouth = landmarks[FaceLandmark.CHOULE] ?: return smileScore
-
-            // Simple heuristic: ratio of mouth width to face width
-            // Open-mouth smile → wider mouth → lower score
-            // For demo, just use a randomized or fixed fallback
-            // TODO: Real geometry would use multiple landmarks
-            smileScore = (1.0f - abs(face.headEulerAngleX / 90.0f)) * 50.0f + 25.0f
-        }
-
-        // Clamp to 0-100
-        return smileScore.coerceIn(0.0f, 100.0f)
+        var score = 50f
+        score -= (smiling - 0.5f) * 80f
+        score += (1f - ((leftEye + rightEye) / 2f)) * 20f
+        score += tilt * 10f
+        return score.coerceIn(0f, 100f)
     }
 
-    private fun levelForScore(score: String): String {
-        val s = score.toFloat()
-        return when {
-            s < 20 → "CHEERFUL 😄"
-            s < 40 → "HAPPY 🙂"
-            s < 60 → "NEUTRAL 😐"
-            s < 80 → "BLUE 😟"
-            else → "DEPRESS-O-METER HIGH 😥"
-        }
+    private fun showScore(score: Float) {
+        findViewById<TextView>(R.id.score_text).text = String.format("%.1f", score)
+        findViewById<TextView>(R.id.level_text).text = levelForScore(score)
+    }
+
+    private fun levelForScore(score: Float): String = when {
+        score < 20f -> "CHEERFUL"
+        score < 40f -> "HAPPY"
+        score < 60f -> "NEUTRAL"
+        score < 80f -> "BLUE"
+        else -> "DEPRESS-O-METER HIGH"
     }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
-        results: IntArray
+        grantResults: IntArray
     ) {
-        super.onRequestPermissionsResult(requestCode, permissions, results)
-        if (requestCode == 1) {
-            if (results.isNotEmpty() && results[0] == PackageManager.PERMISSION_GRANTED) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQ_CAMERA) {
+            if (grantResults.isNotEmpty() &&
+                grantResults[0] == PackageManager.PERMISSION_GRANTED
+            ) {
                 startCamera()
             } else {
                 Toast.makeText(this, "Camera permission required", Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraExecutor.shutdown()
+        faceDetector.close()
+    }
+
+    companion object {
+        private const val TAG = "Depressometer"
+        private const val REQ_CAMERA = 1
     }
 }

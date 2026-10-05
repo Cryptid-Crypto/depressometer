@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- smiley face -->
+    <path
+        android:fillColor="#FFDD00"
+        android:pathData="M54,30 a24,24 0 1,0 0.001,0 z" />
+    <!-- eyes -->
+    <path
+        android:fillColor="#1E1E2E"
+        android:pathData="M46,46 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0" />
+    <path
+        android:fillColor="#1E1E2E"
+        android:pathData="M62,46 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0" />
+    <!-- frown mouth -->
+    <path
+        android:strokeColor="#1E1E2E"
+        android:strokeWidth="3"
+        android:fillColor="#00000000"
+        android:pathData="M44,66 Q54,56 64,66" />
+</vector>
