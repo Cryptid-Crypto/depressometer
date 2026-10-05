@@ -139,4 +139,13 @@
     <string name="badge_explorer">Mood Explorer</string>
     <string name="badge_zen">Zen Cat</string>
     <string name="badge_master">Mood Master</string>
+
+    <!-- Navigation -->
+    <string name="nav_menu">Open menu</string>
+    <string name="nav_tagline">A playful mood scanner</string>
+    <string name="nav_scan">Scan</string>
+    <string name="nav_history">History &amp; trends</string>
+    <string name="nav_points">Points &amp; shop</string>
+    <string name="nav_info">About &amp; privacy</string>
+    <string name="nav_remind">Daily reminder</string>
 </resources>

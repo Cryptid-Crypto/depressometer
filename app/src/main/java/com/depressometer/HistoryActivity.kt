@@ -3,16 +3,24 @@ package com.depressometer
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.navigation.NavigationView
 
 class HistoryActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_history)
+
+        val drawer = findViewById<DrawerLayout>(R.id.drawer)
+        val navView = findViewById<NavigationView>(R.id.nav_view)
+        NavMenu.setup(this, drawer, navView, R.id.nav_history)
+        findViewById<ImageButton>(R.id.btn_nav).setOnClickListener { NavMenu.open(drawer) }
 
         val list = findViewById<RecyclerView>(R.id.history_list)
         val empty = findViewById<TextView>(R.id.empty_text)

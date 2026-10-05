@@ -3,6 +3,8 @@ package com.depressometer
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Build
@@ -12,12 +14,12 @@ import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.PopupMenu
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
@@ -27,7 +29,9 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.gms.ads.MobileAds
+import com.google.android.material.navigation.NavigationView
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
@@ -55,13 +59,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var scanButton: Button
     private lateinit var shareButton: Button
     private lateinit var switchButton: Button
-    private lateinit var menuButton: Button
+    private lateinit var menuButton: ImageButton
+    private lateinit var drawer: DrawerLayout
+    private lateinit var navView: NavigationView
     private lateinit var actionTitle: TextView
     private lateinit var suggestionsBox: LinearLayout
     private lateinit var badgeText: TextView
 
     private lateinit var pointsStore: PointsStore
     private var lastEarnedPoints = 0
+    private lateinit var catArt: Array<Bitmap?>
 
     private var cameraProvider: ProcessCameraProvider? = null
     private var lensFacing = CameraSelector.LENS_FACING_FRONT
@@ -97,6 +104,8 @@ class MainActivity : AppCompatActivity() {
         shareButton = findViewById(R.id.btn_share)
         switchButton = findViewById(R.id.btn_switch)
         menuButton = findViewById(R.id.btn_menu)
+        drawer = findViewById(R.id.drawer)
+        navView = findViewById(R.id.nav_view)
         actionTitle = findViewById(R.id.action_title)
         suggestionsBox = findViewById(R.id.suggestions_box)
         badgeText = findViewById(R.id.badge_text)
@@ -104,6 +113,14 @@ class MainActivity : AppCompatActivity() {
         MobileAds.initialize(this)
         pointsStore = PointsStore(this)
         historyStore = HistoryStore(this)
+
+        catArt = arrayOf(
+            decode(R.drawable.cat_cheerful),
+            decode(R.drawable.cat_happy),
+            decode(R.drawable.cat_neutral),
+            decode(R.drawable.cat_blue),
+            decode(R.drawable.cat_sad)
+        )
 
         val options = FaceDetectorOptions.Builder()
             .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
@@ -115,8 +132,10 @@ class MainActivity : AppCompatActivity() {
 
         scanButton.setOnClickListener { startScan() }
         switchButton.setOnClickListener { switchCamera() }
-        menuButton.setOnClickListener { showMenu() }
+        menuButton.setOnClickListener { NavMenu.open(drawer) }
         shareButton.setOnClickListener { shareResult() }
+
+        NavMenu.setup(this, drawer, navView, R.id.nav_scan, onRemind = { toggleReminder() })
 
         updateSwitchLabel()
         updateHint()
@@ -124,6 +143,7 @@ class MainActivity : AppCompatActivity() {
         moodCat.setScore(50f)
         updateBaselineLabel(null)
         applyCosmetics()
+        moodCat.setArt(catArt.getOrNull(2))
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
             == PackageManager.PERMISSION_GRANTED
@@ -135,28 +155,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ---------------------------------------------------------------- menu
-
-    private fun showMenu() {
-        val popup = PopupMenu(this, menuButton)
-        popup.menu.add(0, MENU_POINTS, 0, getString(R.string.points_menu, pointsStore.balance()))
-        popup.menu.add(0, MENU_HISTORY, 1, getString(R.string.btn_history))
-        popup.menu.add(0, MENU_INFO, 2, getString(R.string.btn_info))
-        popup.menu.add(
-            0, MENU_REMIND, 3,
-            if (remindersEnabled()) getString(R.string.btn_remind_on)
-            else getString(R.string.btn_remind_off)
-        )
-        popup.setOnMenuItemClickListener { item ->
-            when (item.itemId) {
-                MENU_POINTS -> { startActivity(Intent(this, PointsActivity::class.java)); true }
-                MENU_HISTORY -> { startActivity(Intent(this, HistoryActivity::class.java)); true }
-                MENU_INFO -> { startActivity(Intent(this, InfoActivity::class.java)); true }
-                MENU_REMIND -> { toggleReminder(); true }
-                else -> false
-            }
-        }
-        popup.show()
-    }
 
     private fun remindersEnabled() = appPrefs.getBoolean("reminder_enabled", false)
 
@@ -428,8 +426,18 @@ class MainActivity : AppCompatActivity() {
         val color = GradientScaleView.colorForScore(score)
         scoreText.setTextColor(color)
         scale.setScore(score, animate)
-        moodCat.setScore(score)
+        moodCat.setSkin(
+            (Shop.byId(pointsStore.equippedSkin()) ?: Shop.defaultSkin()).fur,
+            (Shop.byId(pointsStore.equippedSkin()) ?: Shop.defaultSkin()).accent
+        )
+        catArt.getOrNull(affinityIndex(score))?.let { moodCat.setArt(it) }
         overlay.setAccentColor(color)
+    }
+
+    private fun decode(resId: Int): Bitmap? = try {
+        BitmapFactory.decodeResource(resources, resId)
+    } catch (e: Exception) {
+        null
     }
 
     private fun levelString(score: Float): String = getString(

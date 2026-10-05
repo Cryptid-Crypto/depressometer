@@ -6,11 +6,14 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.gms.ads.MobileAds
+import com.google.android.material.navigation.NavigationView
 
 /**
  * Points wallet + shop. Earn points by scanning in a good mood (< 40) or by
@@ -30,6 +33,11 @@ class PointsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_points)
+
+        val drawer = findViewById<DrawerLayout>(R.id.drawer)
+        val navView = findViewById<NavigationView>(R.id.nav_view)
+        NavMenu.setup(this, drawer, navView, R.id.nav_points)
+        findViewById<ImageButton>(R.id.btn_nav).setOnClickListener { NavMenu.open(drawer) }
 
         MobileAds.initialize(this)
         store = PointsStore(this)

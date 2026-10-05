@@ -128,4 +128,12 @@
     <string name="badge_explorer">Explorateur d\'humeur</string>
     <string name="badge_zen">Chat zen</string>
     <string name="badge_master">Maître d\'humeur</string>
+
+    <string name="nav_menu">Ouvrir le menu</string>
+    <string name="nav_tagline">Un scanner d\'humeur ludique</string>
+    <string name="nav_scan">Scanner</string>
+    <string name="nav_history">Historique et tendances</string>
+    <string name="nav_points">Points et boutique</string>
+    <string name="nav_info">À propos et confidentialité</string>
+    <string name="nav_remind">Rappel quotidien</string>
 </resources>
