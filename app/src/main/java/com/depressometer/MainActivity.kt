@@ -192,7 +192,7 @@ class MainActivity : AppCompatActivity() {
             if (!isScanning) return
             val now = System.currentTimeMillis()
             val elapsed = SCAN_DURATION_MS - (scanEndAt - now)
-            progressBar.progress = (elapsed * 100 / SCAN_DURATION_MS).coerceIn(0, 100)
+            progressBar.progress = (elapsed * 100 / SCAN_DURATION_MS).toInt().coerceIn(0, 100)
             if (now >= scanEndAt) finishScan() else handler.postDelayed(this, 60)
         }
     }
