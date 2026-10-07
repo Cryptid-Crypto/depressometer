@@ -515,7 +515,11 @@ class MainActivity : AppCompatActivity() {
             score < 80f -> R.array.tips_blue
             else -> R.array.tips_high
         }
+        // Draw a few tips at random from the band's pool so repeat scans surface
+        // fresh advice instead of the same short list every time.
         return resources.getStringArray(resId).toList()
+            .shuffled()
+            .take(SUGGESTIONS_PER_SCAN)
     }
 
     private fun shareResult() {
@@ -581,6 +585,7 @@ class MainActivity : AppCompatActivity() {
         private const val REQ_CAMERA = 1
         private const val REQ_NOTIF = 2
         private const val SCAN_DURATION_MS = 4000L
+        private const val SUGGESTIONS_PER_SCAN = 3
         private const val MENU_POINTS = 0
         private const val MENU_HISTORY = 1
         private const val MENU_INFO = 2

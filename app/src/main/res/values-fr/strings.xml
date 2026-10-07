@@ -73,28 +73,53 @@
         <item>Continuez ce que vous faites — ça fonctionne.</item>
         <item>Notez une chose qui a rendu la journée belle.</item>
         <item>Partagez l\'énergie — dites à quelqu\'un que vous l\'appréciez.</item>
+        <item>Faites une chose dont votre futur vous remerciera.</item>
+        <item>Bougez pendant que vous êtes bien — marche, étirements, danse.</item>
+        <item>Planifiez une petite chose à attendre avec plaisir cette semaine.</item>
+        <item>Prenez une photo ou notez une ligne sur ce sentiment, pour y revenir.</item>
+        <item>Donnez un coup de main — une bonne humeur, ça se partage.</item>
     </string-array>
     <string-array name="tips_happy">
         <item>Une courte marche ou des étirements prolongent la bonne humeur.</item>
         <item>Hydratez-vous — le manque d\'énergie vient souvent du manque d\'eau.</item>
         <item>Écrivez à un ami ; le lien social remonte vite l\'humeur.</item>
+        <item>Prenez dix minutes de lumière du jour sur le visage.</item>
+        <item>Écoutez vraiment une chanson que vous aimez.</item>
+        <item>Rangez un petit coin — un espace clair aide à avoir la tête claire.</item>
+        <item>Refusez une chose dont vous n\'avez pas besoin aujourd\'hui.</item>
+        <item>Notez une chose qui a bien marché.</item>
     </string-array>
     <string-array name="tips_neutral">
         <item>Sortez 10 minutes à la lumière du jour.</item>
         <item>Faites 5 respirations lentes : inspirez 4 s, retenez 4 s, expirez 4 s.</item>
         <item>Écoutez vraiment une chanson que vous aimez.</item>
         <item>Buvez un verre d\'eau et roulez les épaules.</item>
+        <item>Prenez une pause de cinq minutes loin des écrans.</item>
+        <item>Faites une petite tâche que vous remettez à plus tard — l\'élan aide.</item>
+        <item>Étirez le cou et le dos pendant une minute.</item>
+        <item>Notez une chose que vous attendez avec impatience.</item>
+        <item>Écrivez à quelqu\'un juste pour dire bonjour.</item>
     </string-array>
     <string-array name="tips_blue">
         <item>Contactez une personne aujourd\'hui — un appel ou un message.</item>
         <item>Bougez 15 minutes (marche, danse, ce que vous voulez).</item>
         <item>Réduisez le défilement d\'écran pour la prochaine heure.</item>
         <item>Prenez la lumière du soleil et un vrai repas.</item>
+        <item>Essayez la règle des trois minutes : faites une toute petite chose, puis décidez.</item>
+        <item>Écrivez une inquiétude et une chose que vous pouvez contrôler à ce sujet.</item>
+        <item>Couchez-vous un peu plus tôt ce soir.</item>
+        <item>Soyez aussi bienveillant envers vous qu\'envers un ami.</item>
+        <item>Deux minutes de respiration lente peuvent calmer le tout.</item>
     </string-array>
     <string-array name="tips_high">
         <item>Parlez à une personne de confiance aujourd\'hui — ne portez pas cela seul.</item>
         <item>Un petit pas : de l\'eau, une fenêtre ouverte, une sortie dehors.</item>
         <item>Si ce sentiment persiste, un vrai suivi avec un professionnel peut aider.</item>
+        <item>Soyez doux envers vous-même — c\'est un moment difficile, pas un verdict.</item>
+        <item>Sortez quelques minutes, ne serait-ce que pour respirer.</item>
+        <item>Mangez quelque chose et buvez de l\'eau — les bases d\'abord.</item>
+        <item>Gardez une petite chose réconfortante à portée de main.</item>
+        <item>En cas de crise, appelez une ligne d\'aide locale — vous méritez du soutien.</item>
     </string-array>
 
     <string name="points_title">Points et boutique</string>

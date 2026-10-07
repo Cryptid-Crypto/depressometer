@@ -83,28 +83,53 @@
         <item>Keep doing what you\'re doing — it\'s working.</item>
         <item>Bank this win: note one thing that made today good.</item>
         <item>Share the energy — tell someone you appreciate them.</item>
+        <item>Do one thing your future self will thank you for.</item>
+        <item>Give your body some movement while you feel good — walk, stretch, dance.</item>
+        <item>Plan one small thing to look forward to this week.</item>
+        <item>Take a photo or jot a line about this feeling to come back to later.</item>
+        <item>Lend a hand to someone — good moods make good company.</item>
     </string-array>
     <string-array name="tips_happy">
         <item>A short walk or stretch keeps the good mood rolling.</item>
         <item>Hydrate — low energy often just means low water.</item>
         <item>Message a friend; connection lifts mood fast.</item>
+        <item>Get ten minutes of daylight on your face.</item>
+        <item>Put on one song you love and actually listen to it.</item>
+        <item>Tidy one small corner — a clear space helps a clear head.</item>
+        <item>Say no to one thing you don\'t need today.</item>
+        <item>Note one thing that went right.</item>
     </string-array>
     <string-array name="tips_neutral">
         <item>Step outside for 10 minutes of daylight.</item>
         <item>Try 5 slow breaths: in 4s, hold 4s, out 4s.</item>
         <item>Put on one song you love and actually listen to it.</item>
         <item>Drink a glass of water and roll your shoulders.</item>
+        <item>Take a five-minute break from your screens.</item>
+        <item>Do a small task you\'ve been putting off — momentum helps.</item>
+        <item>Stretch your neck and back for a minute.</item>
+        <item>Write down one thing you\'re looking forward to.</item>
+        <item>Text someone just to say hi.</item>
     </string-array>
     <string-array name="tips_blue">
         <item>Reach out to one person today — a call or a text.</item>
         <item>Move your body for 15 minutes (walk, dance, anything).</item>
         <item>Cut back on doomscrolling for the next hour.</item>
         <item>Get some sunlight and eat a proper meal.</item>
+        <item>Try the three-minute rule: do one tiny thing, then decide.</item>
+        <item>Write down one worry and one thing you can control about it.</item>
+        <item>Go to bed a little earlier tonight.</item>
+        <item>Be as kind to yourself as you\'d be to a friend.</item>
+        <item>Two minutes of slow breathing can take the edge off.</item>
     </string-array>
     <string-array name="tips_high">
         <item>Talk to someone you trust today — you don\'t have to carry it alone.</item>
         <item>One small step: water, an open window, a step outside.</item>
         <item>If this feeling lingers, a real check-in with a professional can help.</item>
+        <item>Be gentle with yourself — this is a hard moment, not a verdict.</item>
+        <item>Get outside for a few minutes, even just to breathe.</item>
+        <item>Eat something and drink water — basics first.</item>
+        <item>Put one small comforting thing within reach.</item>
+        <item>If you\'re in crisis, contact a local helpline — you deserve support.</item>
     </string-array>
 
     <!-- Points & shop -->

@@ -37,6 +37,11 @@ class MoodCatView @JvmOverloads constructor(
         strokeCap = Paint.Cap.ROUND
     }
     private val bitmapPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { isFilterBitmap = true }
+    /** Solid white disc behind the art so the mascot circle always reads clean. */
+    private val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+        color = Color.WHITE
+    }
     private val ringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
         strokeWidth = 6f
@@ -87,6 +92,7 @@ class MoodCatView @JvmOverloads constructor(
             clipPath.addCircle(cx, cy, r, Path.Direction.CW)
             canvas.save()
             canvas.clipPath(clipPath)
+            canvas.drawCircle(cx, cy, r, bgPaint)
             val layer = canvas.saveLayer(cx - r, cy - r, cx + r, cy + r, null)
             srcRect.set(0, 0, bmp.width, bmp.height)
             // Fit the whole character inside the circle (inscribed square) so the
