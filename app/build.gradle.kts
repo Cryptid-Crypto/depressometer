@@ -5,14 +5,23 @@ plugins {
 
 android {
     namespace = "com.depressometer"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.depressometer"
         minSdk = 21
-        targetSdk = 34
-        versionCode = 9
-        versionName = "1.8.0"
+        targetSdk = 36
+        versionCode = 10
+        versionName = "1.9.0"
+
+        // AdMob ids are injected so publishing only needs a gradle property swap.
+        // Defaults are Google's official TEST ids.
+        manifestPlaceholders["admobAppId"] =
+            (project.findProperty("admobAppId") as String?) ?: "ca-app-pub-3940256099942544~3347511713"
+        buildConfigField(
+            "String", "ADMOB_REWARDED_UNIT",
+            "\"${(project.findProperty("admobRewardedUnit") as String?) ?: "ca-app-pub-3940256099942544/5224354917"}\""
+        )
     }
 
     signingConfigs {
@@ -25,6 +34,10 @@ android {
                 keyPassword = System.getenv("KEY_PASSWORD")
             }
         }
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {

@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK + AAB
 
 on:
   workflow_dispatch:
@@ -22,14 +22,14 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.9'
+          gradle-version: '8.13'
 
       - name: Install SDK components
         run: |
           SDKMANAGER="$(ls "$ANDROID_SDK_ROOT"/cmdline-tools/*/bin/sdkmanager 2>/dev/null | head -1)"
           echo "Using sdkmanager: $SDKMANAGER"
           yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
-          "$SDKMANAGER" "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+          "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0" "platform-tools"
 
       - name: Configure SDK path
         run: echo "sdk.dir=${ANDROID_SDK_ROOT}" > local.properties
@@ -50,6 +50,15 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
+      # Google Play requires new apps to be published as an Android App Bundle.
+      - name: Build signed release AAB (Play Store)
+        run: gradle bundleRelease --no-daemon --stacktrace
+        env:
+          KEYSTORE_PATH: ${{ runner.temp }}/release.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
@@ -62,4 +71,11 @@ jobs:
         with:
           name: depressometer-release-apk
           path: app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+
+      - name: Upload release AAB (Play Store)
+        uses: actions/upload-artifact@v4
+        with:
+          name: depressometer-release-aab
+          path: app/build/outputs/bundle/release/*.aab
           if-no-files-found: error

@@ -68,6 +68,8 @@
     <string name="share_footer">Depressometer — a playful mood scanner. Not a medical device.</string>
 
     <!-- Info screen -->
+    <string name="privacy_policy_link">Read the full privacy policy online</string>
+    <string name="privacy_url">https://depressometer.com/privacy</string>
     <string name="info_body">Depressometer is a playful, camera-based mood scanner. It is NOT a medical device and does not diagnose, treat, or measure depression.\n\nThe score blends facial cues that appear in depression research: smile intensity (action units AU12/AU6), eye openness (an Eye-Aspect-Ratio style alertness cue), head movement (a psychomotor-retardation proxy) and facial expressivity. Sources: Girard &amp; Cohn (ACII 2009); Jones et al. (2018); FacePsy (2024).\n\n⚠️ \"Smiling depression\" is real, so a smile never dictates the score on its own.\n\nPRIVACY: All face processing happens on-device using Google ML Kit. Camera frames are analysed in memory and discarded immediately — no images are stored, uploaded, or shared. Only the numeric score and its level are saved, in a private local file on your phone.\n\nIf you are struggling, please talk to someone you trust or a qualified professional.</string>
 
     <!-- Affirmations (5 bands, low score -> high score) -->

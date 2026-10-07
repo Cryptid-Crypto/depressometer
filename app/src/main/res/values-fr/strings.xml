@@ -59,6 +59,9 @@
     <string name="share_caption">Mon résultat du Dépressomètre</string>
     <string name="share_footer">Dépressomètre — un scanner d\'humeur ludique. Pas un dispositif médical.</string>
 
+    <string name="privacy_policy_link">Lire la politique de confidentialité complète en ligne</string>
+    <string name="privacy_url">https://depressometer.com/privacy</string>
+
     <string name="info_body">Le Dépressomètre est un scanner d\'humeur ludique basé sur la caméra. Ce n\'est PAS un dispositif médical et il ne diagnostique, ne traite ni ne mesure la dépression.\n\nLe score combine des indices faciaux issus de la recherche : intensité du sourire (unités d\'action AU12/AU6), ouverture des yeux (indice de vigilance de type EAR), mouvement de la tête (indicateur de ralentissement psychomoteur) et expressivité faciale. Sources : Girard &amp; Cohn (ACII 2009) ; Jones et al. (2018) ; FacePsy (2024).\n\n⚠️ La « dépression souriante » existe, donc un sourire ne dicte jamais le score à lui seul.\n\nCONFIDENTIALITÉ : tout le traitement du visage se fait sur l\'appareil via Google ML Kit. Les images de la caméra sont analysées en mémoire puis immédiatement supprimées — aucune image n\'est stockée, envoyée ni partagée. Seuls le score numérique et son niveau sont enregistrés, dans un fichier local privé sur votre téléphone.\n\nSi vous êtes en difficulté, parlez-en à une personne de confiance ou à un professionnel qualifié.</string>
 
     <string-array name="affirmations">

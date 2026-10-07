@@ -20,5 +20,15 @@ class InfoActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.btn_nav).setOnClickListener { NavMenu.open(drawer) }
 
         findViewById<TextView>(R.id.info_text).text = getString(R.string.info_body)
+
+        // Play requires a publicly reachable privacy policy.
+        findViewById<android.widget.Button>(R.id.btn_privacy).setOnClickListener {
+            startActivity(
+                android.content.Intent(
+                    android.content.Intent.ACTION_VIEW,
+                    android.net.Uri.parse(getString(R.string.privacy_url))
+                )
+            )
+        }
     }
 }

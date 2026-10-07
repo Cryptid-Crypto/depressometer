@@ -48,10 +48,10 @@
             android:label="@string/points_title"
             android:screenOrientation="portrait" />
 
-        <!-- AdMob: Google TEST application id — replace with your own before publishing -->
+        <!-- AdMob application id — injected from gradle (admobAppId). -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
+            android:value="${admobAppId}" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

@@ -12,9 +12,9 @@ import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 /**
  * Thin wrapper around an AdMob rewarded ad.
  *
- * NOTE: uses Google's official *test* ad unit id so the app works out of the
- * box. Replace [TEST_REWARDED_UNIT] with your real rewarded unit id before
- * publishing (and swap the APPLICATION_ID meta-data in the manifest).
+ * NOTE: the ad unit id comes from `BuildConfig.ADMOB_REWARDED_UNIT`, which is injected
+ * from gradle (`admobRewardedUnit`, see gradle.properties). Defaults to Google's
+ * official test unit id so the app works out of the box; replace it before publishing.
  */
 class RewardedAdManager(
     private val activity: Activity,
@@ -35,7 +35,7 @@ class RewardedAdManager(
         onStateChanged()
         RewardedAd.load(
             activity,
-            TEST_REWARDED_UNIT,
+            BuildConfig.ADMOB_REWARDED_UNIT,
             AdRequest.Builder().build(),
             object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(ad: RewardedAd) {
@@ -82,7 +82,7 @@ class RewardedAdManager(
     companion object {
         private const val TAG = "RewardedAd"
 
-        // Google's official test rewarded ad unit.
+        // Google's official test rewarded ad unit — used only as the gradle default.
         const val TEST_REWARDED_UNIT = "ca-app-pub-3940256099942544/5224354917"
         const val REWARD_POINTS = PointsStore.POINTS_REWARDED_AD
     }
