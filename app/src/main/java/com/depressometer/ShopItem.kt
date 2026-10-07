@@ -32,17 +32,19 @@ object Shop {
             SKIN_CLASSIC, ItemType.CAT_SKIN, R.string.item_skin_classic, 0,
             imageRes = R.drawable.skin_classic
         ),
+        // The skin artwork is now pre-themed (neon / gold / midnight cats), so no
+        // extra colour wash is applied — it would muddy the custom art.
         ShopItem(
             SKIN_NEON, ItemType.CAT_SKIN, R.string.item_skin_neon, 80,
-            imageRes = R.drawable.skin_neon, tint = 0xFF00E5FF.toInt()
+            imageRes = R.drawable.skin_neon, tint = null
         ),
         ShopItem(
             SKIN_GOLD, ItemType.CAT_SKIN, R.string.item_skin_gold, 150,
-            imageRes = R.drawable.skin_gold, tint = 0xFFFFC107.toInt()
+            imageRes = R.drawable.skin_gold, tint = null
         ),
         ShopItem(
             SKIN_MIDNIGHT, ItemType.CAT_SKIN, R.string.item_skin_midnight, 100,
-            imageRes = R.drawable.skin_midnight, tint = 0xFF3F51B5.toInt()
+            imageRes = R.drawable.skin_midnight, tint = null
         ),
         ShopItem(BADGE_EXPLORER, ItemType.BADGE, R.string.item_badge_explorer, 60,
             badgeRes = R.string.badge_explorer),

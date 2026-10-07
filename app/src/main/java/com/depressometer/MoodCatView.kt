@@ -89,7 +89,10 @@ class MoodCatView @JvmOverloads constructor(
             canvas.clipPath(clipPath)
             val layer = canvas.saveLayer(cx - r, cy - r, cx + r, cy + r, null)
             srcRect.set(0, 0, bmp.width, bmp.height)
-            dstRect.set(cx - r, cy - r, cx + r, cy + r)
+            // Fit the whole character inside the circle (inscribed square) so the
+            // entire cat — head to tail — stays visible, not cropped by the ring.
+            val half = r * 0.70f
+            dstRect.set(cx - half, cy - half, cx + half, cy + half)
             canvas.drawBitmap(bmp, srcRect, dstRect, bitmapPaint)
             val tint = skinTint
             if (tint != null) {
