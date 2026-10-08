@@ -9,10 +9,10 @@ android {
 
     defaultConfig {
         applicationId = "com.depressometer"
-        minSdk = 21
+        minSdk = 24
         targetSdk = 36
-        versionCode = 13
-        versionName = "1.9.3"
+        versionCode = 14
+        versionName = "1.9.4"
 
         // AdMob ids come from gradle.properties (admobAppId / admobRewardedUnit).
         // Required on purpose: no test-id fallback, so a build can never silently ship test ads.
