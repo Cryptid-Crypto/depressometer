@@ -91,6 +91,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // targetSdk 36 enforces edge-to-edge and ignores android:statusBarColor, so the
+        // top bar was drawing under the status bar and the system UI was eating taps on
+        // the hamburger. Pad the chrome back below the system bars (the camera preview
+        // stays full-bleed on purpose).
+        SystemBars.padTop(findViewById(R.id.top_bar))
+        SystemBars.padBottom(findViewById(R.id.bottom_panel))
+
         previewView = findViewById(R.id.preview)
         overlay = findViewById(R.id.overlay)
         moodCat = findViewById(R.id.mood_cat)

@@ -28,6 +28,9 @@ object NavMenu {
                 ?.setImageResource(logoId)
         }
 
+        // The drawer covers the full height, so its header needs the status-bar inset too.
+        SystemBars.padTop(nav.getHeaderView(0))
+
         if (onRemind != null) {
             nav.menu.add(0, ID_REMIND, 10, activity.getString(R.string.nav_remind))
                 .setIcon(R.drawable.ic_nav_remind)
