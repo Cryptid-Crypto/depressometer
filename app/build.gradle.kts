@@ -11,8 +11,8 @@ android {
         applicationId = "com.depressometer"
         minSdk = 21
         targetSdk = 36
-        versionCode = 10
-        versionName = "1.9.0"
+        versionCode = 11
+        versionName = "1.9.1"
 
         // AdMob ids are injected so publishing only needs a gradle property swap.
         // Defaults are Google's official TEST ids.
