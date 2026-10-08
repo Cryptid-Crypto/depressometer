@@ -11,17 +11,17 @@ android {
         applicationId = "com.depressometer"
         minSdk = 21
         targetSdk = 36
-        versionCode = 11
-        versionName = "1.9.1"
+        versionCode = 12
+        versionName = "1.9.2"
 
-        // AdMob ids are injected so publishing only needs a gradle property swap.
-        // Defaults are Google's official TEST ids.
-        manifestPlaceholders["admobAppId"] =
-            (project.findProperty("admobAppId") as String?) ?: "ca-app-pub-3940256099942544~3347511713"
-        buildConfigField(
-            "String", "ADMOB_REWARDED_UNIT",
-            "\"${(project.findProperty("admobRewardedUnit") as String?) ?: "ca-app-pub-3940256099942544/5224354917"}\""
-        )
+        // AdMob ids come from gradle.properties (admobAppId / admobRewardedUnit).
+        // Required on purpose: no test-id fallback, so a build can never silently ship test ads.
+        val admobAppId = (project.findProperty("admobAppId") as String?)
+            ?: error("Set admobAppId in gradle.properties (or pass -PadmobAppId=...)")
+        val admobRewardedUnit = (project.findProperty("admobRewardedUnit") as String?)
+            ?: error("Set admobRewardedUnit in gradle.properties (or pass -PadmobRewardedUnit=...)")
+        manifestPlaceholders["admobAppId"] = admobAppId
+        buildConfigField("String", "ADMOB_REWARDED_UNIT", "\"$admobRewardedUnit\"")
     }
 
     signingConfigs {

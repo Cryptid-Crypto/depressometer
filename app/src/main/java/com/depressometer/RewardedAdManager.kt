@@ -82,8 +82,6 @@ class RewardedAdManager(
     companion object {
         private const val TAG = "RewardedAd"
 
-        // Google's official test rewarded ad unit — used only as the gradle default.
-        const val TEST_REWARDED_UNIT = "ca-app-pub-3940256099942544/5224354917"
         const val REWARD_POINTS = PointsStore.POINTS_REWARDED_AD
     }
 }
